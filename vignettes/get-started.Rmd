@@ -1,0 +1,47 @@
+---
+title: "get-started"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{get-started}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Load the package
+```{r setup}
+library(tidyverse)
+library(socialroulette)
+```
+
+Create a history of previous sessions as well as the current frame from a population of 100 individuals participating in the social roulette.
+
+```{r, message=FALSE}
+ppl <- data.frame(id=sprintf("id%.3d@math.su.se", 1:100))
+session_dates <- seq(as.Date("2021-04-01"), length.out=4, by="1 week")
+# Simulate changing participation each week (with prob 0.7 they will attend)
+frames <- map_df( session_dates, ~ 
+                    ppl %>% slice_sample(n = rbinom(1,nrow(.), prob=0.7)) %>% mutate(date=.x))
+# Frame for the current session is the last one
+current_frame <- frames %>% filter(date == max(date))
+# Simulate the partitions for the last 3 weeks
+past_sessions <- frames %>% filter(date < max(session_dates)) %>%
+   group_split(date) %>%
+   map(~rsocialroulette(current_frame=.x, past_sessions=NULL, m=4, algorithm="srs")) %>%
+   setNames(session_dates[seq_len(length(.))])
+```
+
+```{r}
+# Make the partition, which tries to bring together those who have not met in a long time
+partition <-  rsocialroulette(current_frame, past_sessions, m=4, algorithm="mdgp")
+partition
+```
+
