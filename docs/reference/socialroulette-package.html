@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Make a new lunch roulette session maximizing the gossip to exchange — rsocialroulette • socialroulette</title>
+<title>socialroulette: A package to generate social groupings — socialroulette-package • socialroulette</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,12 @@
 
 
 
-<meta property="og:title" content="Make a new lunch roulette session maximizing the gossip to exchange — rsocialroulette" />
-<meta property="og:description" content="Make a new lunch roulette session maximizing the gossip to exchange" />
+<meta property="og:title" content="socialroulette: A package to generate social groupings — socialroulette-package" />
+<meta property="og:description" content="A package for partitioning individuals into groups of a pre-specified size. This can be as simple as using simple random sampling (srs)
+to divide n individuals into groups of size at least m. If one keeps track of the past partitions then an additional
+aim can be to try to maximize the time that people have a reunion, i.e. end up in the same group. This boils
+down to an instance of the maximally diverse grouping problem.
+See the [package website](https://hoehleatsu.github.io/socialroulette/)  for more information, documentation and examples." />
 
 
 
@@ -115,37 +119,21 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Make a new lunch roulette session maximizing the gossip to exchange</h1>
+    <h1>socialroulette: A package to generate social groupings</h1>
     
-    <div class="hidden name"><code>rsocialroulette.Rd</code></div>
+    <div class="hidden name"><code>socialroulette-package.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Make a new lunch roulette session maximizing the gossip to exchange</p>
+    <p>A package for partitioning individuals into groups of a pre-specified size. This can be as simple as using simple random sampling (srs)
+to divide n individuals into groups of size at least m. If one keeps track of the past partitions then an additional
+aim can be to try to maximize the time that people have a reunion, i.e. end up in the same group. This boils
+down to an instance of the maximally diverse grouping problem.
+See the [package website](https://hoehleatsu.github.io/socialroulette/)  for more information, documentation and examples.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>rsocialroulette</span><span class='op'>(</span><span class='va'>current_frame</span>, <span class='va'>past_sessions</span>, <span class='va'>m</span>, algorithm <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"mdgp"</span>, <span class='st'>"srs"</span><span class='op'>)</span><span class='op'>)</span></pre>
 
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>current_frame</th>
-      <td><p>A tibble containing the participants of the current round, i.e. it has a column `id` containing a unique identifier and a `date` column representing the date of the session.</p></td>
-    </tr>
-    <tr>
-      <th>past_sessions</th>
-      <td><p>A list of partitionLists, i.e. each partition is a list of vectors containing the id of the members of the corresponding group.</p></td>
-    </tr>
-    <tr>
-      <th>m</th>
-      <td><p>minimum group size, i.e. all groups will be at least size m.</p></td>
-    </tr>
-    </table>
 
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
-
-    <p>A partitionList containing the partitioning of current_frame maximizing the overall sum of gossip to be exchanged.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

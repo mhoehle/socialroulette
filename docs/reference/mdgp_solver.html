@@ -40,8 +40,10 @@
 
 
 <meta property="og:title" content="Maximally diverse grouping problem solver based on Lai and Hao (2016) — mdgp_solver" />
-<meta property="og:description" content="The code calls C++ code by Xiangjing Lai and Jin-Kao Hao,
-for this several temporary files are generated using `tempfile()`." />
+<meta property="og:description" content="Given a distance metric for each possible pair in the frame of n individuals,
+find a partition into as many groups as possible with group size at least m. This
+is an instance of the maximallz diverse grouping problem, which we use the algorithm
+by Lai and Hao (2016) to solve." />
 
 
 
@@ -122,8 +124,10 @@ for this several temporary files are generated using `tempfile()`." />
     </div>
 
     <div class="ref-description">
-    <p>The code calls C++ code by Xiangjing Lai and Jin-Kao Hao,
-for this several temporary files are generated using `tempfile()`.</p>
+    <p>Given a distance metric for each possible pair in the frame of n individuals,
+find a partition into as many groups as possible with group size at least m. This
+is an instance of the maximallz diverse grouping problem, which we use the algorithm
+by Lai and Hao (2016) to solve.</p>
     </div>
 
     <pre class="usage"><span class='fu'>mdgp_solver</span><span class='op'>(</span><span class='va'>mdgp_format_file</span>, time_limit <span class='op'>=</span> <span class='fl'>30</span><span class='op'>)</span></pre>
@@ -146,11 +150,32 @@ for this several temporary files are generated using `tempfile()`.</p>
     <p>File name of the solution file</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>The following</p>
-<p>The maximally diverse grouping problem is about partitioning $n$ individuals
-into groups of size at least $m$ while maximizing a sum of utility values computed
-by summing the utility $u(i,j)$ over all individuals $i,j$ partitioned into the same group.
-and summing this quantity over all groups.</p>
+    <p>The maximally diverse grouping problem is about partitioning \(n\) individuals
+into groups of size at least \(m\) while maximizing a sum of utility values computed
+by summing the utility \(u(i,j)\) over all individuals \(i\),\(j\) partitioned into the same group.
+and summing this quantity over all groups. More formally, let \(d_{ij}\) denote the number of
+time unit (typically days) ago, that individual \(i\) and \(j\) were in the same group.
+Note: This distance is derived by looking at the previous partitions and it is a matter
+of definition what this value should be, if \(i\) and \(j\) have not previously been
+in the same group. Let \(n_g=n\&gt; \text{div}\&gt; m\) denote the resulting number of groups where \(\text{div}\) denotes integer division.
+For a given partition let \(x_{ig}\) be an indicator variable, which is 1, if \(i\) is assigned into
+group \(g\) and zero otherwise.
+A solver of the maximally diverse grouping problem now tries to maximize
+$$\sum_{g=1}^G \sum_{i=1}^n \sum_{j=i+1}^n d_{ij} x_{ig} x_{jg},$$
+subject to the conditions
+$$\sum_{g=1}^{G} x_{ig} = 1, \quad i=1,\ldots,n,$$
+$$\sum_{i=1}^n x_{ig} = n_g, \quad g=1,\ldots,G,$$
+$$x_{ig} \in \{0,1\}, \quad i=1,\ldots,n; g=1,\ldots,G,$$
+where \(n_g\) is the size of group \(g\), i.e. \(\sum_{g=1}^G n_g = n\). We shall adopt the convention
+that group sizes are determined by assigning the labels \(1,\ldots,G\) to all individuals and then count
+how often each label occurs. This means, e.g., that for \(n=7\) and \(m=4\) we get \(n_g=7\&gt; \text{div}\&gt; 4=1\) group with 7 members.</p>
+<p>Note: The code calls C++ code by Xiangjing Lai and Jin-Kao Hao,
+for this several temporary files are generated using `tempfile()`.</p>
+    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
+
+    <p>Xiangjing Lai and Jin-Kao Hao (2016). *Iterated maxima search for the maximally
+diverse grouping problem*. European Journal of Operational Research, 254(3), pp. 780-800,
+https://doi.org/10.1016/j.ejor.2016.05.018</p>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
     <p>Xiangjing Lai and Jin-Kao Hao, R interface by M. Höhle</p>

@@ -3,5 +3,8 @@ pkgdown: 1.6.1
 pkgdown_sha: ~
 articles:
   get-started: get-started.html
-last_built: 2021-04-24T21:42Z
+last_built: 2021-04-26T23:02Z
+urls:
+  reference: https://hoehleatsu.github.io/socialroulette//reference
+  article: https://hoehleatsu.github.io/socialroulette//articles
 

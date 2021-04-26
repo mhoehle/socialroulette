@@ -71,7 +71,18 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
-Partition individuals into groups of a predefined size. Different ways of partitioning are provided, one based on the maximally diverse grouping problem solver by Lai and Hao (2016) tries to maximize the overall distance of how far back in time individuals have been in the same group previously. 
+<div id="socialroulette-a-package-to-generate-social-groupings" class="section level1">
+<div class="page-header"><h1 class="hasAnchor">
+<a href="#socialroulette-a-package-to-generate-social-groupings" class="anchor"></a>socialroulette: A package to generate social groupings</h1></div>
+<p>A package for partitioning individuals into groups of a pre-specified size. This can be as simple as using simple random sampling (srs) to divide n individuals into groups of size at least m. If one keeps track of the past partitions then an additional aim can be to try to maximize the time that people have a reunion, i.e. end up in the same group. This boils down to an instance of the maximally diverse grouping problem. See the <a href="https://hoehleatsu.github.io/socialroulette/">package website</a> for more information, documentation and examples.</p>
+<pre><code><a href="https://devtools.r-lib.org//reference/remote-reexports.html"># Install package
+devtools::install_github("hoehle/socialroulette")
+
+# Distribute 5 ppl into groups of at least 2
+frame &lt;- tibble(id=sprintf("id%.3d@math.su.se", 1:5), date=Sys.Date())
+rsocialroulette(frame, past_sessions=NULL, m=2, algorithm="srs")</a></code></pre>
+<p>For more information see the <code>get-started</code> vignette.</p>
+</div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

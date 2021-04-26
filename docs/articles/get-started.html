@@ -82,25 +82,118 @@
 
     
     
-<p>Load the package</p>
+<div id="introduction" class="section level2">
+<h2 class="hasAnchor">
+<a href="#introduction" class="anchor"></a>Introduction</h2>
+<p>The <code>socialroulette</code> R package is a lightweight package for handling the recurrent problem of assigning individuals into groups of a fixed size. This happens, e.g., as part of <a href="https://hbr.org/2013/01/a-new-way-to-network-inside-yo">mystery lunch</a> scheduling or when assigning students into breakout rooms in video lectures. The work on the package was inspired by the blog post <a href="https://staff.math.su.se/hoehle/blog/2021/04/04/socialsamp.html">Long time, no see: Virtual Lunch Roulette</a>,</p>
+</div>
+<div id="the-problem" class="section level2">
+<h2 class="hasAnchor">
+<a href="#the-problem" class="anchor"></a>The Problem</h2>
+<p>The aim is to assign <span class="math inline">\(n\)</span> participants into groups of size at least <span class="math inline">\(m\)</span>. If <span class="math inline">\(m\)</span> is not a divisor of <span class="math inline">\(n\)</span> then some of the groups have to contain more than <span class="math inline">\(m\)</span> participants. As an example consider the scenario that 5 individuals have to be divided into groups of size at least 2. We shall adopt the convention, that group size shall be as close to <span class="math inline">\(m\)</span> as possible and the group sizes should be as equal as possible. In the specific example this means that we will need 2 groups, one with 3 participants and one with 2.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span>
-<span class="co">#&gt; ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.0 ──</span>
-<span class="co">#&gt; ✓ ggplot2 3.3.3     ✓ purrr   0.3.4</span>
-<span class="co">#&gt; ✓ tibble  3.0.6     ✓ dplyr   1.0.4</span>
-<span class="co">#&gt; ✓ tidyr   1.1.2     ✓ stringr 1.4.0</span>
-<span class="co">#&gt; ✓ readr   1.3.1     ✓ forcats 0.5.0</span>
-<span class="co">#&gt; ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──</span>
-<span class="co">#&gt; x dplyr::filter() masks stats::filter()</span>
-<span class="co">#&gt; x dplyr::lag()    masks stats::lag()</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">socialroulette</span><span class="op">)</span></code></pre></div>
-<p>Create a history of previous sessions as well as the current frame from a population of 100 individuals participating in the social roulette.</p>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">socialroulette</span><span class="op">)</span>
+<span class="va">today</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.Date</a></span><span class="op">(</span><span class="op">)</span>
+<span class="va">frame</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span> id<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"id%.02d"</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span>, date<span class="op">=</span><span class="va">today</span><span class="op">)</span>
+<span class="va">round1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rsocialroulette.html">rsocialroulette</a></span><span class="op">(</span>current_frame <span class="op">=</span> <span class="va">frame</span>, past_sessions<span class="op">=</span><span class="cn">NULL</span>, m<span class="op">=</span><span class="fl">2</span>, algorithm<span class="op">=</span><span class="st">"srs"</span><span class="op">)</span>
+<span class="co">#&gt; Partitioning 5 individuals into groups of at least 2.</span>
+<span class="co">#&gt; Created 2 groups of sizes 3 2.</span>
+<span class="va">round1</span>
+<span class="co">#&gt; [[1]]</span>
+<span class="co">#&gt; [1] "id03" "id05" "id01"</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; [[2]]</span>
+<span class="co">#&gt; [1] "id02" "id04"</span></code></pre></div>
+<p>An extension of this grouping problem occurs if we keep track of how participants were partitioned into groups the last time. It can be <a href="https://staff.math.su.se/hoehle/blog/2021/04/04/socialsamp.html">shown</a>, that simple random sampling leads to quite high reunion probabilities. As an example: the probability to end up in the same group with at least one participant from last week when 50 individuals are partitioned into groups of <span class="math inline">\(m=4\)</span> is about 20%. In order to improve on this, one can either use rejection sampling or a solver of the maximally diverse grouping problem.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co">#List of past partitions</span>
+<span class="va">past_sessions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">round1</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html">setNames</a></span><span class="op">(</span><span class="va">today</span><span class="op">)</span>
+<span class="co">#Same individuals the next day</span>
+<span class="va">frame2</span> <span class="op">&lt;-</span> <span class="va">frame</span> <span class="op">%&gt;%</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>date <span class="op">=</span> <span class="va">today</span><span class="op">+</span><span class="fl">1</span><span class="op">)</span>
+<span class="co">#Check for each possible pair in frame2 how long ago (in days) it would be that they met. </span>
+<span class="co">#Note: If they have not met then we define distance as one larger than the biggest distance. (-&gt; change in config)</span>
+<span class="fu">socialroulette</span><span class="fu">:::</span><span class="fu"><a href="../reference/sessions_to_distance.html">sessions_to_distance</a></span><span class="op">(</span><span class="va">frame2</span>, <span class="va">past_sessions</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 10 x 4</span>
+<span class="co">#&gt;    id1   id2   date        dist</span>
+<span class="co">#&gt;    &lt;chr&gt; &lt;chr&gt; &lt;date&gt;     &lt;dbl&gt;</span>
+<span class="co">#&gt;  1 id01  id02  2021-04-28     2</span>
+<span class="co">#&gt;  2 id01  id03  2021-04-28     1</span>
+<span class="co">#&gt;  3 id01  id04  2021-04-28     2</span>
+<span class="co">#&gt;  4 id01  id05  2021-04-28     1</span>
+<span class="co">#&gt;  5 id02  id03  2021-04-28     2</span>
+<span class="co">#&gt;  6 id02  id04  2021-04-28     1</span>
+<span class="co">#&gt;  7 id02  id05  2021-04-28     2</span>
+<span class="co">#&gt;  8 id03  id04  2021-04-28     2</span>
+<span class="co">#&gt;  9 id03  id05  2021-04-28     1</span>
+<span class="co">#&gt; 10 id04  id05  2021-04-28     2</span></code></pre></div>
+<p>Use maximally diverse grouping solver.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">round2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rsocialroulette.html">rsocialroulette</a></span><span class="op">(</span>current_frame <span class="op">=</span> <span class="va">frame2</span>, past_sessions<span class="op">=</span><span class="va">past_sessions</span>, m<span class="op">=</span><span class="fl">2</span>, algorithm<span class="op">=</span><span class="st">"mdgp"</span><span class="op">)</span>
+<span class="co">#&gt; Partitioning 5 individuals into groups of at least 2.</span>
+<span class="co">#&gt; Input file: /var/folders/3g/8qpqpqtx2cz_r4fzd8bjvcyw0000gq/T//Rtmpu2AVvm/file21df126084d3.txt</span>
+<span class="co">#&gt; Output file: /var/folders/3g/8qpqpqtx2cz_r4fzd8bjvcyw0000gq/T//Rtmpu2AVvm/file21df7eb04211</span>
+<span class="co">#&gt; Solution file: /var/folders/3g/8qpqpqtx2cz_r4fzd8bjvcyw0000gq/T//Rtmpu2AVvm/file21df65c1ab11</span>
+<span class="co">#&gt; Time_limit: 30.000000</span>
+<span class="co">#&gt; Inputting...</span>
+<span class="co">#&gt; Read file...Assigning memory...</span>
+<span class="co">#&gt; Building neighbours...</span>
+<span class="co">#&gt; Running...</span>
+<span class="co">#&gt; 6.000000 </span>
+<span class="co">#&gt; 7.000000 </span>
+<span class="co">#&gt; 7.000000 </span>
+<span class="co">#&gt; 7.000000 </span>
+<span class="co">#&gt; 7.000000 </span>
+<span class="co">#&gt; 7.000000 </span>
+<span class="co">#&gt; 7.000000 </span>
+<span class="co">#&gt; 7.000000 </span>
+<span class="co">#&gt; 7.000000 </span>
+<span class="co">#&gt; 7.000000</span>
+<span class="co">#&gt; Parsed with column specification:</span>
+<span class="co">#&gt; cols(</span>
+<span class="co">#&gt;   id_int = col_character(),</span>
+<span class="co">#&gt;   group = col_character()</span>
+<span class="co">#&gt; )</span>
+<span class="co">#&gt; Created 2 groups of sizes 3 2.</span>
+<span class="va">round2</span>
+<span class="co">#&gt; [[1]]</span>
+<span class="co">#&gt; [1] "id01" "id02" "id05"</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; [[2]]</span>
+<span class="co">#&gt; [1] "id03" "id04"</span></code></pre></div>
+<p>We note that the number of re-unions is….</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">all_sessions</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">round1</span>, <span class="va">round2</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html">setNames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">frame</span><span class="op">$</span><span class="va">date</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">frame</span><span class="op">$</span><span class="va">date</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">+</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/debug.html">debug</a></span><span class="op">(</span><span class="fu">socialroulette</span><span class="fu">:::</span><span class="va"><a href="../reference/sessions_to_distance.html">sessions_to_distance</a></span><span class="op">)</span>
+<span class="co">#need a function to convert partitions to df </span>
+<span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html">left_join</a></span><span class="op">(</span><span class="fu">socialroulette</span><span class="fu">:::</span><span class="fu"><a href="../reference/partitionList_to_frame.html">partitionList_to_frame</a></span><span class="op">(</span><span class="va">round1</span><span class="op">)</span>,
+          <span class="fu">socialroulette</span><span class="fu">:::</span><span class="fu"><a href="../reference/partitionList_to_frame.html">partitionList_to_frame</a></span><span class="op">(</span><span class="va">round2</span><span class="op">)</span>, by<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"group"</span><span class="op">)</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 13 x 3</span>
+<span class="co">#&gt;    id.x  group id.y </span>
+<span class="co">#&gt;    &lt;chr&gt; &lt;int&gt; &lt;chr&gt;</span>
+<span class="co">#&gt;  1 id03      1 id01 </span>
+<span class="co">#&gt;  2 id03      1 id02 </span>
+<span class="co">#&gt;  3 id03      1 id05 </span>
+<span class="co">#&gt;  4 id05      1 id01 </span>
+<span class="co">#&gt;  5 id05      1 id02 </span>
+<span class="co">#&gt;  6 id05      1 id05 </span>
+<span class="co">#&gt;  7 id01      1 id01 </span>
+<span class="co">#&gt;  8 id01      1 id02 </span>
+<span class="co">#&gt;  9 id01      1 id05 </span>
+<span class="co">#&gt; 10 id02      2 id03 </span>
+<span class="co">#&gt; 11 id02      2 id04 </span>
+<span class="co">#&gt; 12 id04      2 id03 </span>
+<span class="co">#&gt; 13 id04      2 id04</span></code></pre></div>
+</div>
+<div id="a-more-complex-example" class="section level2">
+<h2 class="hasAnchor">
+<a href="#a-more-complex-example" class="anchor"></a>A more complex example</h2>
+<p>Create a history of previous sessions as well as the current frame from a population of 100 individuals participating in the social roulette.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">ppl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>id<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"id%.3d@math.su.se"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">100</span><span class="op">)</span><span class="op">)</span>
 <span class="va">session_dates</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.Date.html">as.Date</a></span><span class="op">(</span><span class="st">"2021-04-01"</span><span class="op">)</span>, length.out<span class="op">=</span><span class="fl">4</span>, by<span class="op">=</span><span class="st">"1 week"</span><span class="op">)</span>
 <span class="co"># Simulate changing participation each week (with prob 0.7 they will attend)</span>
-<span class="va">frames</span> <span class="op">&lt;-</span> <span class="fu">map_df</span><span class="op">(</span> <span class="va">session_dates</span>, <span class="op">~</span> 
-                    <span class="va">ppl</span> <span class="op">%&gt;%</span> <span class="fu">slice_sample</span><span class="op">(</span>n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html">rbinom</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">.</span><span class="op">)</span>, prob<span class="op">=</span><span class="fl">0.7</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">mutate</span><span class="op">(</span>date<span class="op">=</span><span class="va">.x</span><span class="op">)</span><span class="op">)</span>
+<span class="va">frames</span> <span class="op">&lt;-</span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map_df</a></span><span class="op">(</span> <span class="va">session_dates</span>, <span class="op">~</span> 
+                           <span class="va">ppl</span> <span class="op">%&gt;%</span> <span class="fu">slice_sample</span><span class="op">(</span>n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html">rbinom</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">.</span><span class="op">)</span>, prob<span class="op">=</span><span class="fl">0.7</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">mutate</span><span class="op">(</span>date<span class="op">=</span><span class="va">.x</span><span class="op">)</span><span class="op">)</span>
 <span class="co"># Frame for the current session is the last one</span>
 <span class="va">current_frame</span> <span class="op">&lt;-</span> <span class="va">frames</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">date</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">date</span><span class="op">)</span><span class="op">)</span>
 <span class="co"># Simulate the partitions for the last 3 weeks</span>
@@ -108,91 +201,43 @@
    <span class="fu">group_split</span><span class="op">(</span><span class="va">date</span><span class="op">)</span> <span class="op">%&gt;%</span>
    <span class="fu">map</span><span class="op">(</span><span class="op">~</span><span class="fu"><a href="../reference/rsocialroulette.html">rsocialroulette</a></span><span class="op">(</span>current_frame<span class="op">=</span><span class="va">.x</span>, past_sessions<span class="op">=</span><span class="cn">NULL</span>, m<span class="op">=</span><span class="fl">4</span>, algorithm<span class="op">=</span><span class="st">"srs"</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
    <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html">setNames</a></span><span class="op">(</span><span class="va">session_dates</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">.</span><span class="op">)</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>
+<span class="co">#&gt; Partitioning 61 individuals into groups of at least 4.</span>
+<span class="co">#&gt; Created 15 groups of sizes 5 4 4 4 4 4 4 4 4 4 4 4 4 4 4.</span>
+<span class="co">#&gt; Partitioning 72 individuals into groups of at least 4.</span>
+<span class="co">#&gt; Created 18 groups of sizes 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4.</span>
 <span class="co">#&gt; Partitioning 70 individuals into groups of at least 4.</span>
-<span class="co">#&gt; Created 17 groups of sizes 5 5 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4.</span>
-<span class="co">#&gt; Partitioning 63 individuals into groups of at least 4.</span>
-<span class="co">#&gt; Created 15 groups of sizes 5 5 5 4 4 4 4 4 4 4 4 4 4 4 4.</span>
-<span class="co">#&gt; Partitioning 68 individuals into groups of at least 4.</span>
-<span class="co">#&gt; Created 17 groups of sizes 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4.</span></code></pre></div>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<span class="co">#&gt; Created 17 groups of sizes 5 5 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4.</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># Make the partition, which tries to bring together those who have not met in a long time</span>
 <span class="va">partition</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/rsocialroulette.html">rsocialroulette</a></span><span class="op">(</span><span class="va">current_frame</span>, <span class="va">past_sessions</span>, m<span class="op">=</span><span class="fl">4</span>, algorithm<span class="op">=</span><span class="st">"mdgp"</span><span class="op">)</span>
-<span class="co">#&gt; Partitioning 61 individuals into groups of at least 4.</span>
-<span class="co">#&gt; Input file: /var/folders/3g/8qpqpqtx2cz_r4fzd8bjvcyw0000gq/T//RtmpLCrN7B/file2362aa56914.txt</span>
-<span class="co">#&gt; Output file: /var/folders/3g/8qpqpqtx2cz_r4fzd8bjvcyw0000gq/T//RtmpLCrN7B/file23627195a581</span>
-<span class="co">#&gt; Solution file: /var/folders/3g/8qpqpqtx2cz_r4fzd8bjvcyw0000gq/T//RtmpLCrN7B/file236217a4f269</span>
-<span class="co">#&gt; Time_limit: 30.000000</span>
-<span class="co">#&gt; Inputting...</span>
-<span class="co">#&gt; Read file...Assigning memory...</span>
-<span class="co">#&gt; Building neighbours...</span>
-<span class="co">#&gt; Running...</span>
-<span class="co">#&gt; 2618.000000 </span>
-<span class="co">#&gt; 2632.000000 </span>
-<span class="co">#&gt; 2632.000000 </span>
-<span class="co">#&gt; 2632.000000 </span>
-<span class="co">#&gt; 2632.000000 </span>
-<span class="co">#&gt; 2632.000000 </span>
-<span class="co">#&gt; 2632.000000 </span>
-<span class="co">#&gt; 2604.000000 </span>
-<span class="co">#&gt; 2632.000000 </span>
-<span class="co">#&gt; 2632.000000</span>
-<span class="co">#&gt; Parsed with column specification:</span>
-<span class="co">#&gt; cols(</span>
-<span class="co">#&gt;   id_int = col_character(),</span>
-<span class="co">#&gt;   group = col_character()</span>
-<span class="co">#&gt; )</span>
-<span class="co">#&gt; Created 15 groups of sizes 5 4 4 4 4 4 4 4 4 4 4 4 4 4 4.</span>
-<span class="va">partition</span>
-<span class="co">#&gt; [[1]]</span>
-<span class="co">#&gt; [1] "id086@math.su.se" "id025@math.su.se" "id019@math.su.se" "id020@math.su.se"</span>
-<span class="co">#&gt; [5] "id016@math.su.se"</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[2]]</span>
-<span class="co">#&gt; [1] "id024@math.su.se" "id059@math.su.se" "id003@math.su.se" "id029@math.su.se"</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[3]]</span>
-<span class="co">#&gt; [1] "id051@math.su.se" "id046@math.su.se" "id009@math.su.se" "id049@math.su.se"</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[4]]</span>
-<span class="co">#&gt; [1] "id093@math.su.se" "id030@math.su.se" "id018@math.su.se" "id011@math.su.se"</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[5]]</span>
-<span class="co">#&gt; [1] "id090@math.su.se" "id050@math.su.se" "id023@math.su.se" "id100@math.su.se"</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[6]]</span>
-<span class="co">#&gt; [1] "id084@math.su.se" "id040@math.su.se" "id002@math.su.se" "id075@math.su.se"</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[7]]</span>
-<span class="co">#&gt; [1] "id097@math.su.se" "id073@math.su.se" "id056@math.su.se" "id017@math.su.se"</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[8]]</span>
-<span class="co">#&gt; [1] "id004@math.su.se" "id089@math.su.se" "id021@math.su.se" "id066@math.su.se"</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[9]]</span>
-<span class="co">#&gt; [1] "id026@math.su.se" "id032@math.su.se" "id041@math.su.se" "id043@math.su.se"</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[10]]</span>
-<span class="co">#&gt; [1] "id070@math.su.se" "id057@math.su.se" "id022@math.su.se" "id028@math.su.se"</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[11]]</span>
-<span class="co">#&gt; [1] "id037@math.su.se" "id076@math.su.se" "id039@math.su.se" "id034@math.su.se"</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[12]]</span>
-<span class="co">#&gt; [1] "id085@math.su.se" "id033@math.su.se" "id005@math.su.se" "id080@math.su.se"</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[13]]</span>
-<span class="co">#&gt; [1] "id062@math.su.se" "id048@math.su.se" "id078@math.su.se" "id083@math.su.se"</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[14]]</span>
-<span class="co">#&gt; [1] "id099@math.su.se" "id064@math.su.se" "id013@math.su.se" "id096@math.su.se"</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[15]]</span>
-<span class="co">#&gt; [1] "id031@math.su.se" "id088@math.su.se" "id036@math.su.se" "id068@math.su.se"</span></code></pre></div>
+<span class="va">partition</span></code></pre></div>
+<p>Check that no-one in <code>partition</code> is assigned to a group having a member, which they already met with previously.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co">#Extend the past sessions</span>
+<span class="va">sessions</span> <span class="op">&lt;-</span> <span class="va">past_sessions</span>
+<span class="va">sessions</span><span class="op">[[</span><span class="va">current_frame_with_group</span> <span class="op">%&gt;%</span> <span class="fu">slice</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">pull</span><span class="op">(</span><span class="va">date</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html">as.character</a></span><span class="op">(</span><span class="op">)</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">partition</span>
+
+ <span class="co">#Check if anyone has a distance of zero?</span>
+<span class="va">pairs</span> <span class="op">&lt;-</span> <span class="fu">socialroulette</span><span class="fu">:::</span><span class="fu"><a href="../reference/sessions_to_distance.html">sessions_to_distance</a></span><span class="op">(</span><span class="va">current_frame</span>, <span class="va">sessions</span><span class="op">)</span> 
+
+<span class="co"># # Make all pairs within a group</span>
+<span class="co"># group_to_pairs &lt;- function(group) {</span>
+<span class="co">#   expand_grid(id1=group, id2=group) %&gt;% filter(id1 &lt; id2)</span>
+<span class="co"># }</span>
+<span class="co"># </span>
+<span class="co"># #Make the pairs data.frame for each session</span>
+<span class="co"># past_pairs &lt;- map_dfr(past_sessions,  ~ map_df(.x, ~ group_to_pairs(.x)), .id="date")</span>
+<span class="co"># </span>
+<span class="co"># socialroulette:::partitionList_to_frame(partition)  </span>
+<span class="co"># pairs %&gt;% pull(dist) %&gt;% table()</span></code></pre></div>
+</div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
 
-      </div>
+        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
+    </nav>
+</div>
 
 </div>
 

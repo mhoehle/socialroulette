@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Simple partitioning individuals into groups using simple random sampling — partition_srs • socialroulette</title>
+<title>Make all pairs within a group — group_to_pairs • socialroulette</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Simple partitioning individuals into groups using simple random sampling — partition_srs" />
-<meta property="og:description" content="Simple partitioning individuals into groups using simple random sampling" />
+<meta property="og:title" content="Make all pairs within a group — group_to_pairs" />
+<meta property="og:description" content="Make all pairs within a group" />
 
 
 
@@ -87,6 +87,18 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/get-started.html">get-started</a>
+    </li>
+  </ul>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -103,33 +115,29 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Simple partitioning individuals into groups using simple random sampling</h1>
+    <h1>Make all pairs within a group</h1>
     
-    <div class="hidden name"><code>partition_srs.Rd</code></div>
+    <div class="hidden name"><code>group_to_pairs.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Simple partitioning individuals into groups using simple random sampling</p>
+    <p>Make all pairs within a group</p>
     </div>
 
-    <pre class="usage"><span class='fu'>partition_srs</span><span class='op'>(</span><span class='va'>frame</span>, <span class='va'>m</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>group_to_pairs</span><span class='op'>(</span><span class='va'>group</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>frame</th>
-      <td><p>tibble containing a column `id` of the sampling units (e.g. people)</p></td>
-    </tr>
-    <tr>
-      <th>m</th>
-      <td><p>requested group size (integer). If m not a divisor of nrow(people) then put leftovers in existing groups</p></td>
+      <th>group</th>
+      <td><p>A vector of ids belonging to the same group</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A list of vectors where each vector containing the ids (row number in frame) of those belonging to the same group</p>
+    <p>a data.frame containing all pairs with id of the first being smaller than the id of the second entry</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
