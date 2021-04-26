@@ -17,7 +17,9 @@ Description: Partition individuals into groups of a predefined size. Different w
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Imports: tidyverse
+Imports: 
+    magrittr,
+    tidyverse
 RoxygenNote: 7.1.1
 Suggests: 
     rmarkdown,

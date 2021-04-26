@@ -15,21 +15,67 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
-
-Load the package
-```{r setup}
-library(tidyverse)
-library(socialroulette)
+```{r, echo=FALSE}
+set.seed(123)
 ```
 
+## Introduction
+
+The `socialroulette` R package is a lightweight package for handling the recurrent problem of assigning individuals into groups of a fixed size. This happens, e.g., as part of [mystery lunch](https://hbr.org/2013/01/a-new-way-to-network-inside-yo) scheduling or when assigning students into breakout rooms in video lectures. The work on the package was inspired by the blog post [Long time, no see: Virtual Lunch Roulette](https://staff.math.su.se/hoehle/blog/2021/04/04/socialsamp.html),
+
+## The Problem
+The aim is to assign $n$ participants into groups of size at least $m$. If $m$ is not a divisor of $n$ then some of the groups have to contain more than $m$ participants. As an example consider the scenario that 5 individuals have to be divided into groups of size at least 2. We shall adopt the convention, that group size shall be as close to $m$ as possible and the group sizes should be as equal as possible. In the specific example this means that we will need 2 groups, one with 3 participants and one with 2.
+
+```{r, echo=FALSE}
+suppressPackageStartupMessages(library(tidyverse))
+```
+```{r}
+library(socialroulette)
+today <- Sys.Date()
+frame <- tibble::tibble( id=sprintf("id%.02d",1:5), date=today)
+round1 <- rsocialroulette(current_frame = frame, past_sessions=NULL, m=2, algorithm="srs")
+round1
+```
+
+An extension of this grouping problem occurs if we keep track of how participants were partitioned into groups the last time. 
+It can be [shown](https://staff.math.su.se/hoehle/blog/2021/04/04/socialsamp.html), that simple random sampling leads to quite high reunion probabilities. As an example: the probability to end up in the same group with at least one participant from last week when 50 individuals are partitioned into groups of $m=4$ is about 20%. In order to improve on this, one can either use rejection sampling or a solver of the maximally diverse grouping problem.
+
+```{r}
+#List of past partitions
+past_sessions <- list(round1) %>% setNames(today)
+#Same individuals the next day
+frame2 <- frame %>% dplyr::mutate(date = today+1)
+#Check for each possible pair in frame2 how long ago (in days) it would be that they met. 
+#Note: If they have not met then we define distance as one larger than the biggest distance. (-> change in config)
+socialroulette:::sessions_to_distance(frame2, past_sessions)
+```
+
+Use maximally diverse grouping solver.
+```{r, cache=TRUE}
+round2 <- rsocialroulette(current_frame = frame2, past_sessions=past_sessions, m=2, algorithm="mdgp")
+round2
+```
+
+We note that the number of re-unions is....
+
+```{r}
+all_sessions = list(round1, round2) %>% setNames(c(frame$date[1], frame$date[1]+1))
+debug(socialroulette:::sessions_to_distance)
+#need a function to convert partitions to df 
+dplyr::left_join(socialroulette:::partitionList_to_frame(round1),
+          socialroulette:::partitionList_to_frame(round2), by=c("group"))
+```
+
+
+## A more complex example
 Create a history of previous sessions as well as the current frame from a population of 100 individuals participating in the social roulette.
 
 ```{r, message=FALSE}
 ppl <- data.frame(id=sprintf("id%.3d@math.su.se", 1:100))
 session_dates <- seq(as.Date("2021-04-01"), length.out=4, by="1 week")
 # Simulate changing participation each week (with prob 0.7 they will attend)
-frames <- map_df( session_dates, ~ 
-                    ppl %>% slice_sample(n = rbinom(1,nrow(.), prob=0.7)) %>% mutate(date=.x))
+frames <- purrr::map_df( session_dates, ~ 
+                           ppl %>% slice_sample(n = rbinom(1,nrow(.), prob=0.7)) %>% mutate(date=.x))
 # Frame for the current session is the last one
 current_frame <- frames %>% filter(date == max(date))
 # Simulate the partitions for the last 3 weeks
@@ -39,9 +85,32 @@ past_sessions <- frames %>% filter(date < max(session_dates)) %>%
    setNames(session_dates[seq_len(length(.))])
 ```
 
-```{r}
+```{r, eval=FALSE}
 # Make the partition, which tries to bring together those who have not met in a long time
 partition <-  rsocialroulette(current_frame, past_sessions, m=4, algorithm="mdgp")
 partition
+```
+
+Check that no-one in `partition` is assigned to a group having a member, which they already met with previously.
+
+```{r, eval=FALSE}
+#Extend the past sessions
+sessions <- past_sessions
+sessions[[current_frame_with_group %>% slice(1) %>% pull(date) %>% as.character()]] <- partition
+
+ #Check if anyone has a distance of zero?
+pairs <- socialroulette:::sessions_to_distance(current_frame, sessions) 
+
+# # Make all pairs within a group
+# group_to_pairs <- function(group) {
+#   expand_grid(id1=group, id2=group) %>% filter(id1 < id2)
+# }
+# 
+# #Make the pairs data.frame for each session
+# past_pairs <- map_dfr(past_sessions,  ~ map_df(.x, ~ group_to_pairs(.x)), .id="date")
+# 
+# socialroulette:::partitionList_to_frame(partition)  
+# pairs %>% pull(dist) %>% table()
+
 ```
 
