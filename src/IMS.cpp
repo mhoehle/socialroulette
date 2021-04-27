@@ -102,7 +102,7 @@ void inputing()
 		cout << "### Error open, File_Name " << File_Name << endl;
 		exit(0);
 	}
-	Rprintf("Read file...");
+	Rprintf("Read file...\n");
 	if ( strcmp(StrReading, "ds" )==0 || strcmp(StrReading, "ss" )==0 )
 	{
          LB = new int [K];

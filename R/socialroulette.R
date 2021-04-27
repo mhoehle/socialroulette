@@ -72,8 +72,8 @@ mdgp_solver <- function(mdgp_format_file, time_limit= 30) {
 #' @param m The minimum group size, i.e. all groups have size at least m
 #' @return File name of the generated specification file
 #' @examples
-#' frame  <- tibble::tibble(id=sprintf("id%.3d", 1:5), date=as.Date("2021-04-27"))
-#' round1 <- list(c("id02", "id03", "id04"), c("id05", "id01"))
+#' frame  <- tibble::tibble(id=sprintf("id%.2d", 1:5), date=as.Date("2021-04-28"))
+#' round1 <- list(c("id02", "id03", "id04"), c("id01", "id05"))
 #' spec_file <- socialroulette:::write_mdgp_specfile(frame, past_sessions=list("2021-04-21"=round1), m=2)
 #' cat(stringr::str_c(readLines(spec_file), collapse="\n"))
 write_mdgp_specfile <- function(current_frame, past_sessions, m) {
@@ -161,7 +161,7 @@ make_partition_srs <- function(frame, m) {
   # Make a list of ids in each group
   groups <- map(seq_len(n_g), function(i) {
     idx <- perm[which(g == i)]
-    frame %>% slice(idx) %>% pull(id)
+    frame %>% slice(idx) %>% pull(id) %>% sort()
   })
 
   return(groups)
@@ -182,12 +182,58 @@ group_to_pairs <- function(group) {
 #' @param sessions A list of past partitions, i.e. a list where each entry is a partitionList
 #' @examples
 #' sessions <- list("2021-04-21"=list(c("id02", "id03", "id04"), c("id05", "id01")),
-#'                   "2021-04-27"=list(c("id05", "id03", "id04"), c("id02", "id01")))
+#'                   "2021-04-28"=list(c("id05", "id03", "id04"), c("id02", "id01")))
 #' socialroulette:::sessions_to_pairs(sessions)
 
 sessions_to_pairs <- function(sessions) {
   map_dfr(sessions,  ~ map_df(.x, ~ group_to_pairs(.x)), .id="date")
 }
+
+#' Function to convert a data.frame of pairs to a partition
+#'
+#' @param pairs_df data.frame containing the pairs, i.e. it has columns date, id1 and id2
+#' @return A partitionList
+#' @keywords internal
+pairs_to_partition <- function(pairs_df) {
+  res <- list()
+  for (i in seq_len(nrow(pairs_df))) {
+    ids <- pairs_df[i, c("id1", "id2")] %>% as.character()
+    in_list <- map_lgl(res, function(l) any(ids %in% l))
+    if (any(in_list)) {
+      if (sum(in_list) == 1) {
+        # Add to bucket
+        res[[which(in_list)]] <- c(res[[which(in_list)]], ids) %>% unique() %>% sort()
+      } else {
+        # Merge two buckets
+        res[[length(res)+1]] <- res[which(in_list)] %>% unlist %>% unique() %>% sort()
+        res[which(in_list)] <- NULL
+      }
+    } else {
+      # Make a new bucket
+      res[[length(res)+1]] <- ids
+    }
+  }
+  return(res)
+}
+
+#' Convert a pairs data.frame into a session list
+#'
+#' @param pairs A \code{data.frame} with columns date and \code{id1} and \code{id2}.
+#' @examples
+#' sessions <- list("2021-04-21"=list(c("id02", "id03", "id04"), c("id01", "id05")),
+#'                   "2021-04-28"=list(c("id03", "id04", "id05"), c("id01", "id02")))
+#' sessions2 <- sessions %>% socialroulette:::sessions_to_pairs() %>%
+#'                           socialroulette:::pairs_to_session()
+#' all.equal(sessions, sessions2)
+pairs_to_session <- function(pairs) {
+
+  sessions <- pairs %>% arrange(date) %>% group_split(date) %>%
+    map(~ pairs_to_partition(.x)) %>%
+    setNames(pairs %>% pull(date) %>% unique())
+
+  return(sessions)
+}
+
 
 #' Convert a list of sessions into a MDGP distance metric
 #'
@@ -196,9 +242,9 @@ sessions_to_pairs <- function(sessions) {
 #'
 #' @description A session is a data.frame containing the columns id1, id2 and date
 #' @examples
-#' frame  <- tibble::tibble(id=sprintf("id%.2d", 1:5), date=as.Date("2021-04-27"))
-#' sessions <- list("2021-04-14"=list(c("id02", "id03", "id04"), c("id05", "id01")),
-#'                   "2021-04-21"=list(c("id05", "id03", "id04"), c("id02", "id01")))
+#' frame  <- tibble::tibble(id=sprintf("id%.2d", 1:5), date=as.Date("2021-04-28"))
+#' sessions <- list("2021-04-14"=list(c("id02", "id03", "id04"), c("id01", "id05")),
+#'                   "2021-04-21"=list(c("id03", "id04", "id05"), c("id01", "id02")))
 #' socialroulette:::sessions_to_distance(frame, sessions)
 
 sessions_to_distance <- function(current_frame, past_sessions) {
@@ -217,12 +263,13 @@ sessions_to_distance <- function(current_frame, past_sessions) {
   past_pairs <- sessions_to_pairs( past_sessions) #map_dfr(past_sessions,  ~ map_df(.x, ~ group_to_pairs(.x)), .id="date")
 
   #Define distance to today for those who have not met so far - special case if only one past value
-  Delta <- past_pairs %>% dplyr::pull(date) %>% unique() %>% as.Date() %>% sort()
-  if (length(Delta)>1) {
-    Delta <- Delta %>% diff() %>% mean() %>% as.numeric()
-  } else {
-    Delta <- 1
-  }
+  Delta <- rbind(current_pairs, past_pairs) %>%
+    dplyr::pull(date) %>% unique() %>%
+    as.Date() %>%
+    sort() %>%
+    diff() %>%
+    mean() %>% as.numeric()
+  # Compute with Delta
   date_no_meet <- (past_pairs %>% pull(date) %>% as.Date() %>%  min() ) - Delta
   dist_today <- ((current_pairs %>% pull(date) %>% .[[1]]) - date_no_meet) %>% as.numeric()
 
@@ -244,7 +291,7 @@ sessions_to_distance <- function(current_frame, past_sessions) {
 #' @return A list of vectors, where each vector contains all individuals in the corresponding group
 frame_to_partitionList <- function(frame) {
   n_g <- length(unique(frame$group))
-  map(seq_len(n_g), ~ frame %>% filter(group == .x) %>% pull(id))
+  map(seq_len(n_g), ~ frame %>% filter(group == .x) %>% pull(id) %>% sort())
 }
 
 #' Take a partitionList and convert it to frame representation
@@ -279,19 +326,21 @@ partition_to_frame <- function(partition, frame ) {
 #' Make a new lunch roulette session maximizing the gossip to exchange
 #'
 #' @param current_frame A tibble containing the participants of the current round, i.e. it has a column `id` containing a unique identifier and a `date` column representing the date of the session.
-#' @param past_sessions A list of partitionLists, i.e. each partition is a list of vectors containing the id of the members of the corresponding group.
+#' @param past_sessions A list of partitionLists, i.e. each partition is a list of vectors containing the id of the members of the corresponding group. The default \code{NULL} means that no previous sessions are taken into account.
 #' @param m minimum group size, i.e. all groups will be at least size m.
 #' @return A partitionList containing the partitioning of current_frame maximizing the overall sum of gossip to be exchanged.
 #' @export
-rsocialroulette <- function(current_frame, past_sessions, m, algorithm=c("mdgp", "srs")) {
+rsocialroulette <- function(current_frame, past_sessions=NULL, m, algorithm=c("mdgp", "srs")) {
   # Sanity checks
   stopifnot( "id" %in% colnames(current_frame))
   stopifnot( "date" %in% colnames(current_frame))
   stopifnot( all(!is.na(as.Date(names(past_sessions)))))
   algorithm <- match.arg(algorithm, choices=c("mdgp", "srs"))
-
+  if (!is.null(past_sessions) & (algorithm == "srs")) {
+    stop("Simple random sampling (srs) does not work with past session information.")
+  }
   #Debug info
-  cat(stringr::str_c("Partitioning ", nrow(current_frame), " individuals into groups of at least ", m, ".\n"))
+  cat(stringr::str_c("Partitioning ", nrow(current_frame), " individuals into groups of at least ", m, " (", ifelse(is.null(past_sessions),"no past sessions", "Optimizing wrt. past sessions"),").\n"))
 
   #Read output and convert it to a partitionList
   if (algorithm == "mdgp") {

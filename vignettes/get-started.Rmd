@@ -24,7 +24,10 @@ set.seed(123)
 The `socialroulette` R package is a lightweight package for handling the recurrent problem of assigning individuals into groups of a fixed size. This happens, e.g., as part of [mystery lunch](https://hbr.org/2013/01/a-new-way-to-network-inside-yo) scheduling or when assigning students into breakout rooms in video lectures. The work on the package was inspired by the blog post [Long time, no see: Virtual Lunch Roulette](https://staff.math.su.se/hoehle/blog/2021/04/04/socialsamp.html),
 
 ## The Problem
-The aim is to assign $n$ participants into groups of size at least $m$. If $m$ is not a divisor of $n$ then some of the groups have to contain more than $m$ participants. As an example consider the scenario that 5 individuals have to be divided into groups of size at least 2. We shall adopt the convention, that group size shall be as close to $m$ as possible and the group sizes should be as equal as possible. In the specific example this means that we will need 2 groups, one with 3 participants and one with 2.
+
+The aim is to assign $n$ participants into groups of size at least $m$. If $m$ is not a divisor of $n$ then some of the groups have to contain more than $m$ participants. As an example consider the scenario that 5 individuals have to be divided into groups of size at least 2. We shall adopt the convention, that group size shall be as close to $m$ as possible and the group sizes should be as equal as possible. In the specific toy example this means that we will need 2 groups, one with 3 participants and one with 2 participants.
+
+**Remark**: Partitions with $m=2$ are also known as a [matchings](https://en.wikipedia.org/wiki/Matching_(graph_theory)) and can be handled particularly efficient using special-purpose graph algorithms. However, we use the $m=2$ example in order to illustrate the package functionality with a simple to follow example. Later sections of the vignette contain some more realistic examples with $m>2$.
 
 ```{r, echo=FALSE}
 suppressPackageStartupMessages(library(tidyverse))
@@ -32,8 +35,8 @@ suppressPackageStartupMessages(library(tidyverse))
 ```{r}
 library(socialroulette)
 today <- Sys.Date()
-frame <- tibble::tibble( id=sprintf("id%.02d",1:5), date=today)
-round1 <- rsocialroulette(current_frame = frame, past_sessions=NULL, m=2, algorithm="srs")
+frame <- tibble( id=sprintf("id%.02d",1:5), date=today)
+round1 <- rsocialroulette(current_frame = frame, m=2, algorithm="srs")
 round1
 ```
 
@@ -43,74 +46,141 @@ It can be [shown](https://staff.math.su.se/hoehle/blog/2021/04/04/socialsamp.htm
 ```{r}
 #List of past partitions
 past_sessions <- list(round1) %>% setNames(today)
-#Same individuals the next day
-frame2 <- frame %>% dplyr::mutate(date = today+1)
+#Same individuals one week later
+frame2 <- frame %>% mutate(date = today+7)
 #Check for each possible pair in frame2 how long ago (in days) it would be that they met. 
-#Note: If they have not met then we define distance as one larger than the biggest distance. (-> change in config)
 socialroulette:::sessions_to_distance(frame2, past_sessions)
 ```
 
-Use maximally diverse grouping solver.
-```{r, cache=TRUE}
+For comparison, we now use maximally diverse grouping problem solver on the same toy example. This corresponds to taking a sledgehammer to crush a nut, but helps to show how the package works:
+
+```{r, cache=TRUE, results="hide"}
 round2 <- rsocialroulette(current_frame = frame2, past_sessions=past_sessions, m=2, algorithm="mdgp")
+```
+```{r}
 round2
 ```
 
-We note that the number of re-unions is....
-
+Using this partitions we get the following re-unions, i.e. pairs of individuals which in round 2 meet again, despite already being in the same group in round 1.
+Note that it is easy to show that with 5 participants and $m=2$, at least one re-union is needed. 
 ```{r}
-all_sessions = list(round1, round2) %>% setNames(c(frame$date[1], frame$date[1]+1))
-debug(socialroulette:::sessions_to_distance)
-#need a function to convert partitions to df 
-dplyr::left_join(socialroulette:::partitionList_to_frame(round1),
-          socialroulette:::partitionList_to_frame(round2), by=c("group"))
+sessions <- list(list(last_week = round1), list(this_week = round2))
+pairs <- map(sessions, ~ socialroulette:::sessions_to_pairs(.x))
+inner_join(pairs[[1]], pairs[[2]], by=c("id1", "id2"))
 ```
 
-
 ## A more complex example
+
+We continue with a slightly more advanced example, where we have a class with 100 students, which for a weekly virtual lab exercise class need to be divided into groups of at least 4.
+Since for various reasons not all students show up to each class, the sampling frame of individuals to be partitioned each week changes accordingly. Still, we would like to make the partitioning of the current week s.t. students get as many new acquaintances as possible.
+
+
 Create a history of previous sessions as well as the current frame from a population of 100 individuals participating in the social roulette.
 
 ```{r, message=FALSE}
-ppl <- data.frame(id=sprintf("id%.3d@math.su.se", 1:100))
-session_dates <- seq(as.Date("2021-04-01"), length.out=4, by="1 week")
-# Simulate changing participation each week (with prob 0.7 they will attend)
+# Class of 100 students with 4 previous lectures
+students <- tibble(id=sprintf("id%.3d@student.su.se", 1:100))
+session_dates <- seq(as.Date("2021-03-31"), length.out=4, by="1 week")
+
+# Simulate changing participation each week for the last 4 weeks (70% attendance)
 frames <- purrr::map_df( session_dates, ~ 
-                           ppl %>% slice_sample(n = rbinom(1,nrow(.), prob=0.7)) %>% mutate(date=.x))
-# Frame for the current session is the last one
-current_frame <- frames %>% filter(date == max(date))
-# Simulate the partitions for the last 3 weeks
-past_sessions <- frames %>% filter(date < max(session_dates)) %>%
+            students %>% slice_sample(n = rbinom(1,nrow(.), prob=0.7)) %>% mutate(date=.x))
+
+# Generate some past sessions using simple random sampling
+past_sessions <- frames %>% 
    group_split(date) %>%
-   map(~rsocialroulette(current_frame=.x, past_sessions=NULL, m=4, algorithm="srs")) %>%
-   setNames(session_dates[seq_len(length(.))])
+   map(~rsocialroulette(current_frame=.x, m=4, algorithm="srs")) %>%
+   setNames(session_dates)
 ```
 
-```{r, eval=FALSE}
+For a more realist scenario, we pretend that each previous session has been saved
+as a .csv file. For example like:
+```{r}
+# Simulate the storage of each partition as a .csv file to disk
+# with 3 columns: date, id1 and id2, i.e. all pairs
+temp_dir <- tempdir() #adjust path to your setting if needed
+socialroulette:::sessions_to_pairs( past_sessions ) %>% 
+  group_split(date) %>%
+  walk(~  write_csv(x=.x, path=file.path(temp_dir, str_c("socialroulette-", .$date[1], ".csv"))))
+```
+
+We thus read the partitions from disk and need to convert between the stored pair format (i.e. a data.frame listing each pair being in the same group as id1, id2 together with the corresponding date) back to the partition list format. This can be done as follows
+```{r, echo=FALSE, results="hide"}
+newest_file <- file.path(temp_dir, str_c("socialroulette-2021-04-28.csv"))
+if (file.exists(newest_file)) {
+  file.remove(newest_file)
+}
+```
+
+```{r, message=FALSE, results="hide"}
+# Read again from file
+pairs <- map_df(list.files(path=temp_dir, pattern="socialroulette.*", full.names=TRUE), ~read_csv(file=.x))
+```
+
+A small sanity check to ensure that the write and read did not really change any information:
+```{r}
+# Convert into a pairs data.frame 
+past_sessions2 <- pairs %>% socialroulette:::pairs_to_session()
+# Sanity check
+all.equal(past_sessions, past_sessions2)  
+
+```
+
+
+Everything is thus now in place to generate the partition:
+```{r, results="hide", message=FALSE, cache=TRUE}
+# Who is in the next class?
+current_frame <-  students %>% slice_sample(n = rbinom(1,nrow(.), prob=0.7)) %>%
+  mutate(date=max(session_dates) + diff(session_dates) %>% mean())
+
 # Make the partition, which tries to bring together those who have not met in a long time
 partition <-  rsocialroulette(current_frame, past_sessions, m=4, algorithm="mdgp")
-partition
 ```
 
-Check that no-one in `partition` is assigned to a group having a member, which they already met with previously.
+The partition can be visualized using the `igraph` package:
+```{r, echo=FALSE}
+suppressPackageStartupMessages(library(igraph))
+#igraph config
+igraph_options(vertex.label.family="sans", 
+               vertex.size=8,
+               #vertex.color="cyan",
+               vertex.label.cex=0.5,
+               vertex.frame.color="black",
+               edge.color="black",
+               edge.arrow.size=0.1)
 
-```{r, eval=FALSE}
-#Extend the past sessions
-sessions <- past_sessions
-sessions[[current_frame_with_group %>% slice(1) %>% pull(date) %>% as.character()]] <- partition
+# Convert to frame specification with group column
+edges_df <- socialroulette:::partitionList_to_frame(partition) %>% 
+  mutate(id = str_replace(id, "@student.su.se", ""))
 
- #Check if anyone has a distance of zero?
-pairs <- socialroulette:::sessions_to_distance(current_frame, sessions) 
+#Get group of each
+vertex_groups <- edges_df %>%
+  nest_by(group) %>% 
+  mutate(ids = list(distinct(data, id) %>% pull(id))) %>% 
+  pull(ids)
 
-# # Make all pairs within a group
-# group_to_pairs <- function(group) {
-#   expand_grid(id1=group, id2=group) %>% filter(id1 < id2)
-# }
-# 
-# #Make the pairs data.frame for each session
-# past_pairs <- map_dfr(past_sessions,  ~ map_df(.x, ~ group_to_pairs(.x)), .id="date")
-# 
-# socialroulette:::partitionList_to_frame(partition)  
-# pairs %>% pull(dist) %>% table()
+#Make a graph
+set.seed(123)
+G <- graph_from_data_frame(edges_df, directed=FALSE) %>%  set_edge_attr("width", value=1) 
+par(mar=c(0,0,0,0))
+plot(G, mark.groups = vertex_groups, layout=layout_with_fr)
+```
 
+Of course the partition can be stored to file as before in order to include it in the past partitions next week:
+```{r}
+list(partition) %>% 
+  setNames(current_frame %>% slice(1) %>% pull(date)) %>%
+  socialroulette:::sessions_to_pairs() %>% 
+  write_csv(path=file.path(temp_dir, str_c("socialroulette-", .$date[1],".csv")))
+```
+
+or can be stored in a Zoom compatible breakout room specification format:
+```{r}
+partition %>% 
+  socialroulette:::partitionList_to_frame() %>% 
+  rename(email=id) %>% 
+  mutate(room = sprintf("room%.03d",group)) %>% 
+  select(room, email) %>% 
+  write_csv(path=file.path(temp_dir, str_c("zoom-breakoutrooms.csv")))
 ```
 

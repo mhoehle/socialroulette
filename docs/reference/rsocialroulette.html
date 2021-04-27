@@ -124,7 +124,12 @@
     <p>Make a new lunch roulette session maximizing the gossip to exchange</p>
     </div>
 
-    <pre class="usage"><span class='fu'>rsocialroulette</span><span class='op'>(</span><span class='va'>current_frame</span>, <span class='va'>past_sessions</span>, <span class='va'>m</span>, algorithm <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"mdgp"</span>, <span class='st'>"srs"</span><span class='op'>)</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>rsocialroulette</span><span class='op'>(</span>
+  <span class='va'>current_frame</span>,
+  past_sessions <span class='op'>=</span> <span class='cn'>NULL</span>,
+  <span class='va'>m</span>,
+  algorithm <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"mdgp"</span>, <span class='st'>"srs"</span><span class='op'>)</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -135,7 +140,7 @@
     </tr>
     <tr>
       <th>past_sessions</th>
-      <td><p>A list of partitionLists, i.e. each partition is a list of vectors containing the id of the members of the corresponding group.</p></td>
+      <td><p>A list of partitionLists, i.e. each partition is a list of vectors containing the id of the members of the corresponding group. The default <code>NULL</code> means that no previous sessions are taken into account.</p></td>
     </tr>
     <tr>
       <th>m</th>
