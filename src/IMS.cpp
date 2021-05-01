@@ -15,7 +15,9 @@
 // The code was kindly donated for use in the package under a GPL v3 license
 // The GPL v3 license terms are available from:
 // https://www.gnu.org/licenses/gpl-3.0.txt or see the file LICENSE
-
+//
+// Minor modification of the code were performed in order to avoid R CMD check
+// warnings (e.g. removing the definition of unused variables)
 
 /******************************************************************************************/
 /***************************    0. Head Files needed     **********************************/
@@ -84,7 +86,7 @@ int * UB; // Upper bound of the number of elements in the group i
 /******************************************************************************************/
 void inputing()
 {
-    int i,j,k;
+    int i,j;
     int x1, x2;
     float d;
 	ifstream FIC;
@@ -148,7 +150,7 @@ void inputing()
 
 void AssignMemery()
 {
-    int i,j;
+    int i;
 
     p = new int [N];
     bestp = new int [N];
@@ -258,7 +260,6 @@ void Outputing(Solution &S, char *filename)
 
 void Out_results(double best , double ave,  double worst, char *filename, char instance[])
 {
-    int i;
 	FILE *fp;
 	char buff[80];
     sprintf(buff,"%s",filename);
@@ -273,7 +274,7 @@ void Out_results(double best , double ave,  double worst, char *filename, char i
 void RandomInitiaSol(int p[],int SizeG[])
 {
 
-     int i,j;
+     int i;
      int p1;
      int count;
      int tot_number;
@@ -342,7 +343,7 @@ void GreedyInitiaSol(int p[],int SizeGroup[])
 
      int i,j,g;
      int r, g_max;
-     int count, start_index, cur_index;
+     int cur_index;
      int tot_number;
      int sum = 0;
      int *Flag;
@@ -445,7 +446,7 @@ void BuildNeighbors()
 {
      int i,j,g;
      int count;
-     int SN = N*(N-1)/2 + N*K;
+     //hoehle: not used - commented out: int SN = N*(N-1)/2 + N*K;
      count = 0;
      for(i=0;i<N;i++)
        for(g=0;g<K;g++)
@@ -550,7 +551,7 @@ void One_Move_Update_Delta_Matrix(int i, int g0, int g1)
 }
 void One_Move_Update_Delta_Matrix1(int i, int g0, int g1)
 {
-    int x,j,k;
+    int j;
 
     for(j=0;j<N;j++)
      {

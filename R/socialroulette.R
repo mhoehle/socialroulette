@@ -325,10 +325,20 @@ partition_to_frame <- function(partition, frame ) {
 
 #' Make a new lunch roulette session maximizing the gossip to exchange
 #'
+#' One can either use simple random sampling (srs) to generate the partition or
+#' solve the maximally diverse grouping problem (mdgp) using the algorithm by
+#' Lai and Hao (2016) in order to maximize time since last meets over all groups.
+#'
 #' @param current_frame A tibble containing the participants of the current round, i.e. it has a column `id` containing a unique identifier and a `date` column representing the date of the session.
 #' @param past_sessions A list of partitionLists, i.e. each partition is a list of vectors containing the id of the members of the corresponding group. The default \code{NULL} means that no previous sessions are taken into account.
 #' @param m minimum group size, i.e. all groups will be at least size m.
 #' @return A partitionList containing the partitioning of current_frame maximizing the overall sum of gossip to be exchanged.
+#'
+#' @seealso mdgp_solver
+#' @references Höhle M (2021), Long time, no see: Virtual Lunch Roulette, Blog post, \url{https://staff.math.su.se/hoehle/blog/2021/04/04/socialsamp.html}
+#' @references Xiangjing Lai and Jin-Kao Hao (2016). *Iterated maxima search for the maximally
+#' diverse grouping problem*. European Journal of Operational Research, 254(3), pp. 780-800,
+#' https://doi.org/10.1016/j.ejor.2016.05.018
 #' @export
 rsocialroulette <- function(current_frame, past_sessions=NULL, m, algorithm=c("mdgp", "srs")) {
   # Sanity checks

@@ -2,11 +2,5 @@
 
 export("%>%")
 export(rsocialroulette)
-import(dplyr)
-import(purrr)
-import(readr)
-import(stringr)
-import(tidyr)
-import(tidyverse)
 importFrom(magrittr,"%>%")
 useDynLib(socialroulette,mdgp)

@@ -116,16 +116,16 @@
 <span class="co">#&gt; # A tibble: 10 x 4</span>
 <span class="co">#&gt;    id1   id2   date        dist</span>
 <span class="co">#&gt;    &lt;chr&gt; &lt;chr&gt; &lt;date&gt;     &lt;dbl&gt;</span>
-<span class="co">#&gt;  1 id01  id02  2021-05-05    14</span>
-<span class="co">#&gt;  2 id01  id03  2021-05-05     7</span>
-<span class="co">#&gt;  3 id01  id04  2021-05-05    14</span>
-<span class="co">#&gt;  4 id01  id05  2021-05-05     7</span>
-<span class="co">#&gt;  5 id02  id03  2021-05-05    14</span>
-<span class="co">#&gt;  6 id02  id04  2021-05-05     7</span>
-<span class="co">#&gt;  7 id02  id05  2021-05-05    14</span>
-<span class="co">#&gt;  8 id03  id04  2021-05-05    14</span>
-<span class="co">#&gt;  9 id03  id05  2021-05-05     7</span>
-<span class="co">#&gt; 10 id04  id05  2021-05-05    14</span></code></pre></div>
+<span class="co">#&gt;  1 id01  id02  2021-05-08    14</span>
+<span class="co">#&gt;  2 id01  id03  2021-05-08     7</span>
+<span class="co">#&gt;  3 id01  id04  2021-05-08    14</span>
+<span class="co">#&gt;  4 id01  id05  2021-05-08     7</span>
+<span class="co">#&gt;  5 id02  id03  2021-05-08    14</span>
+<span class="co">#&gt;  6 id02  id04  2021-05-08     7</span>
+<span class="co">#&gt;  7 id02  id05  2021-05-08    14</span>
+<span class="co">#&gt;  8 id03  id04  2021-05-08    14</span>
+<span class="co">#&gt;  9 id03  id05  2021-05-08     7</span>
+<span class="co">#&gt; 10 id04  id05  2021-05-08    14</span></code></pre></div>
 <p>For comparison, we now use maximally diverse grouping problem solver on the same toy example. This corresponds to taking a sledgehammer to crush a nut, but helps to show how the package works:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">round2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rsocialroulette.html">rsocialroulette</a></span><span class="op">(</span>current_frame <span class="op">=</span> <span class="va">frame2</span>, past_sessions<span class="op">=</span><span class="va">past_sessions</span>, m<span class="op">=</span><span class="fl">2</span>, algorithm<span class="op">=</span><span class="st">"mdgp"</span><span class="op">)</span>

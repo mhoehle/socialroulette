@@ -6,16 +6,13 @@
 #' down to an instance of the maximally diverse grouping problem.
 #' See the [package website](https://hoehleatsu.github.io/socialroulette/)  for more information, documentation and examples.
 #'
+#' A side effect of the package is that it provides a maximally diverse grouping problem solver, which
+#' can -in principle- be used for other purposed. As a consequence, functionality which could be considered as
+#' internal, can be helpful.
+#'
 #' @docType package
 #' @keywords package
 #' @name socialroulette-package
-#'
-#' @import tidyverse
-#' @import dplyr
-#' @import tidyr
-#' @import purrr
-#' @import stringr
-#' @import readr
 #'
 NULL
 
