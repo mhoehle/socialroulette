@@ -95,7 +95,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/get-started.html">get-started</a>
+      <a href="../articles/get-started.html">Getting Started</a>
     </li>
   </ul>
 </li>
@@ -157,8 +157,18 @@ upper boundary for each group size. The keyword `ds` for the solver in the above
     <pre class="examples"><div class='input'><span class='va'>frame</span>  <span class='op'>&lt;-</span> <span class='fu'>tibble</span><span class='fu'>::</span><span class='fu'><a href='https://tibble.tidyverse.org/reference/tibble.html'>tibble</a></span><span class='op'>(</span>id<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/sprintf.html'>sprintf</a></span><span class='op'>(</span><span class='st'>"id%.2d"</span>, <span class='fl'>1</span><span class='op'>:</span><span class='fl'>5</span><span class='op'>)</span>, date<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/as.Date.html'>as.Date</a></span><span class='op'>(</span><span class='st'>"2021-04-28"</span><span class='op'>)</span><span class='op'>)</span>
 <span class='va'>round1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"id02"</span>, <span class='st'>"id03"</span>, <span class='st'>"id04"</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"id01"</span>, <span class='st'>"id05"</span><span class='op'>)</span><span class='op'>)</span>
 <span class='va'>spec_file</span> <span class='op'>&lt;-</span> <span class='fu'>socialroulette</span><span class='fu'>:::</span><span class='fu'>write_mdgp_specfile</span><span class='op'>(</span><span class='va'>frame</span>, past_sessions<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='st'>"2021-04-21"</span><span class='op'>=</span><span class='va'>round1</span><span class='op'>)</span>, m<span class='op'>=</span><span class='fl'>2</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in pull(., id): could not find function "pull"</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/cat.html'>cat</a></span><span class='op'>(</span><span class='fu'>stringr</span><span class='fu'>::</span><span class='fu'><a href='https://stringr.tidyverse.org/reference/str_c.html'>str_c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/readLines.html'>readLines</a></span><span class='op'>(</span><span class='va'>spec_file</span><span class='op'>)</span>, collapse<span class='op'>=</span><span class='st'>"\n"</span><span class='op'>)</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in readLines(spec_file): object 'spec_file' not found</span></div></pre>
+<span class='fu'><a href='https://rdrr.io/r/base/cat.html'>cat</a></span><span class='op'>(</span><span class='fu'>stringr</span><span class='fu'>::</span><span class='fu'><a href='https://stringr.tidyverse.org/reference/str_c.html'>str_c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/readLines.html'>readLines</a></span><span class='op'>(</span><span class='va'>spec_file</span><span class='op'>)</span>, collapse<span class='op'>=</span><span class='st'>"\n"</span><span class='op'>)</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; 5 2 ds 3 3 2 2
+#&gt; 0 1 14
+#&gt; 0 2 14
+#&gt; 0 3 14
+#&gt; 0 4 7
+#&gt; 1 2 7
+#&gt; 1 3 7
+#&gt; 1 4 14
+#&gt; 2 3 7
+#&gt; 2 4 14
+#&gt; 3 4 14</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

@@ -2,5 +2,12 @@
 
 export("%>%")
 export(rsocialroulette)
+import(dplyr)
+import(purrr)
 importFrom(magrittr,"%>%")
+importFrom(readr,read_delim)
+importFrom(readr,write_delim)
+importFrom(stats,dist)
+importFrom(stats,setNames)
+importFrom(tibble,tibble)
 useDynLib(socialroulette,mdgp)

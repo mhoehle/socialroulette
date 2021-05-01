@@ -1,6 +1,6 @@
 Package: socialroulette
 Type: Package
-Title: Generate social roulette partitions, i.e. divide people into groups of predefined size.
+Title: Generate social roulette partitions, i.e. divide people into groups of predefined size
 Version: 0.1.0
 Authors@R: c(MH = person("Michael", "Höhle",
                   email = "hoehle@math.su.se",
@@ -14,14 +14,18 @@ Authors@R: c(MH = person("Michael", "Höhle",
 Author: Michael Höhle [aut, cre], Jin-Kao Hao [aut], Xiangjing Lai [aut]
 Maintainer: Michael Höhle <hoehle@math.su.se>
 Description: Partition individuals into groups of a predefined size. Different ways of partitioning are provided, one based on the maximally diverse grouping problem solver by Lai and Hao (2016) tries to maximize the overall distance of how far back in time individuals have been in the same group previously. 
-License: GPL-3
+License: GPL-3 
 Encoding: UTF-8
 LazyData: true
 Imports: 
     magrittr,
-    tidyverse
+    dplyr,
+    purrr,
+    readr,
+    tibble
 RoxygenNote: 7.1.1
 Suggests: 
     rmarkdown,
-    knitr
+    knitr,
+    igraph
 VignetteBuilder: knitr

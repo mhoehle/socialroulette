@@ -236,7 +236,7 @@ int Proof(Solution &S)
     flag = 1;
     for(i=0; i < K; i++)
     if(S.SizeG[i] < LB[i]|| S.SizeG[i]> UB[i]) { flag = 0; break;}
-   // printf("  %d   ********** \n",flag);
+   // Rprintf("  %d   ********** \n",flag);
     return flag;
 }
 
@@ -245,14 +245,14 @@ void Outputing(Solution &S, char *filename)
     int i;int r;
 	FILE *fp;
 	char buff[80];
-	r= rand()%1000;
+	r= rand()%1000;//random number in the range 0-1000
 	if(Proof(S)==0) return;
     sprintf(buff,"%s",filename);
     fp=fopen(buff,"a+");
     fprintf(fp,"N = %d  G = %d  f = %lf\n", N , K, S.cost);
     for(i=0;i<K;i++)
     fprintf(fp,"%5.2d   %5.2d   %5.2d \n", LB[i], UB[i], S.SizeG[i]);
-    printf("\n");
+    Rprintf("\n");
     for(i=0;i<N;i++)
     fprintf(fp,"%5.3d   %5.2d\n",i, S.p[i]);
 	fclose(fp);
@@ -971,74 +971,74 @@ void IMS()
 /********************    10. Main Function for Multiple Runs     **************************/
 /******************************************************************************************/
 
-int main(int argc, char *argv[])
-{
-    int i,j;
-    int i1,j1;
-    int seed;
-    const int  Times = 10; //hoehle: used to be 20
-    double F[Times];
-    double F_best= -99999999, F_worst = 999999999, F_ave = 0.0;
-    seed = time(NULL) % 1000000 ;
-     srand( seed );
-
-    /*
-    File_Name = "MDG-a_21.txt";
-    Output_File_Name = "ss.txt";
-    Solution_File = "MDG-a_21.sol";
-    Time_limit = 1200;
-    */
-
-    File_Name = argv[1];
-    Solution_File = argv[2];
-    Output_File_Name = argv[3];
-    Time_limit = atoi(argv[4]);
-    //hoehle: Output_File_Name = "new.txt";
-
-    Rprintf("Inputting...\n");
-    inputing();
-    Rprintf("Assigning memory...\n");
-    AssignMemery();
-
-    if(N==120) Time_limit = 3;
-    else if(N==240)Time_limit = 20;
-    else if(N==480)Time_limit = 120;
-    else if(N==960)Time_limit = 600;
-    else if(N==2000)Time_limit= 1200;
-    else if(N==3000)Time_limit = 3000;
-
-    printf("Building neighbours...\n");
-    BuildNeighbors();
-    printf("Running (this might take a while)...\n");
-    OS.cost = -99999.0;
-    for(j=0;j<Times;j++) F[j] = 0.0;
-    for(i=0; i < Times; i++)
-    {
-      IMS();
-      if(Proof(GS))
-      {
-        F[i] = GS.cost;
-        if(F[i]> OS.cost)
-        {
-            for(i1=0;i1<N;i1++) OS.p[i1] = GS.p[i1];
-            for(j1=0;j1<K;j1++) OS.SizeG[j1] = GS.SizeG[j1];
-            OS.cost = GS.cost;
-        }
-      }
-      printf("%lf \n", F[i]);
-    }
-    for(i=0;i<Times;i++)
-    {
-       if(F[i] > F_best )  F_best = F[i];
-       if(F[i] < F_worst)  F_worst = F[i];
-       F_ave += F[i];
-    }
-    F_ave /=  Times;
-    Out_results(F_best , F_ave, F_worst, Output_File_Name, File_Name);
-    Outputing(OS, Solution_File);
-    ReleaseMemery();
-    return 0;
-}
+// int main(int argc, char *argv[])
+// {
+//     int i,j;
+//     int i1,j1;
+//     int seed;
+//     const int  Times = 10; //hoehle: used to be 20
+//     double F[Times];
+//     double F_best= -99999999, F_worst = 999999999, F_ave = 0.0;
+//     seed = time(NULL) % 1000000 ;
+//      srand( seed );
+//
+//     /*
+//     File_Name = "MDG-a_21.txt";
+//     Output_File_Name = "ss.txt";
+//     Solution_File = "MDG-a_21.sol";
+//     Time_limit = 1200;
+//     */
+//
+//     File_Name = argv[1];
+//     Solution_File = argv[2];
+//     Output_File_Name = argv[3];
+//     Time_limit = atoi(argv[4]);
+//     //hoehle: Output_File_Name = "new.txt";
+//
+//     Rprintf("Inputting...\n");
+//     inputing();
+//     Rprintf("Assigning memory...\n");
+//     AssignMemery();
+//
+//     if(N==120) Time_limit = 3;
+//     else if(N==240)Time_limit = 20;
+//     else if(N==480)Time_limit = 120;
+//     else if(N==960)Time_limit = 600;
+//     else if(N==2000)Time_limit= 1200;
+//     else if(N==3000)Time_limit = 3000;
+//
+//     printf("Building neighbours...\n");
+//     BuildNeighbors();
+//     printf("Running (this might take a while)...\n");
+//     OS.cost = -99999.0;
+//     for(j=0;j<Times;j++) F[j] = 0.0;
+//     for(i=0; i < Times; i++)
+//     {
+//       IMS();
+//       if(Proof(GS))
+//       {
+//         F[i] = GS.cost;
+//         if(F[i]> OS.cost)
+//         {
+//             for(i1=0;i1<N;i1++) OS.p[i1] = GS.p[i1];
+//             for(j1=0;j1<K;j1++) OS.SizeG[j1] = GS.SizeG[j1];
+//             OS.cost = GS.cost;
+//         }
+//       }
+//       printf("%lf \n", F[i]);
+//     }
+//     for(i=0;i<Times;i++)
+//     {
+//        if(F[i] > F_best )  F_best = F[i];
+//        if(F[i] < F_worst)  F_worst = F[i];
+//        F_ave += F[i];
+//     }
+//     F_ave /=  Times;
+//     Out_results(F_best , F_ave, F_worst, Output_File_Name, File_Name);
+//     Outputing(OS, Solution_File);
+//     ReleaseMemery();
+//     return 0;
+// }
 
 // Function for calling the solver from R
 extern "C" {
@@ -1050,8 +1050,12 @@ extern "C" {
     const int  Times = 10; //hoehle: used to be 20
     double F[Times];
     double F_best= -99999999, F_worst = 999999999, F_ave = 0.0;
+
+    //Seed the random number generator
     seed = time(NULL) % 1000000 ;
     srand( seed );
+    //Setup R random number generator
+    GetRNGstate();
 
     //Assign variables
     File_Name = *File_Name_R;
@@ -1110,6 +1114,9 @@ extern "C" {
     Out_results(F_best , F_ave, F_worst, Output_File_Name, File_Name);
     Outputing(OS, Solution_File);
     ReleaseMemery();
+
+    //Release RNG - https://cran.r-project.org/doc/manuals/R-exts.html#Random-numbers
+    PutRNGstate();
 
     //Done
   } /* end of mdgp */

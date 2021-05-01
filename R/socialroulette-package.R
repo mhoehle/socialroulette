@@ -7,12 +7,17 @@
 #' See the [package website](https://hoehleatsu.github.io/socialroulette/)  for more information, documentation and examples.
 #'
 #' A side effect of the package is that it provides a maximally diverse grouping problem solver, which
-#' can -in principle- be used for other purposed. As a consequence, functionality which could be considered as
-#' internal, can be helpful.
+#' can in principle be used for other purposes. As a consequence, internal functionality is exposed using
+#' export statements.
 #'
 #' @docType package
 #' @keywords package
 #' @name socialroulette-package
-#'
+#' @importFrom stats dist
+#' @importFrom stats setNames
+#' @importFrom tibble tibble
+#' @importFrom readr read_delim write_delim
+#' @import dplyr
+#' @import purrr
 NULL
 

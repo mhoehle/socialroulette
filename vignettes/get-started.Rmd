@@ -1,8 +1,8 @@
 ---
-title: "get-started"
+title: "Getting Started"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{get-started}
+  %\VignetteIndexEntry{Getting Started}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
@@ -29,13 +29,11 @@ The aim is to assign $n$ participants into groups of size at least $m$. If $m$ i
 
 **Remark**: Partitions with $m=2$ are also known as a [matchings](https://en.wikipedia.org/wiki/Matching_(graph_theory)) and can be handled particularly efficient using special-purpose graph algorithms. However, we use the $m=2$ example in order to illustrate the package functionality with a simple to follow example. Later sections of the vignette contain some more realistic examples with $m>2$.
 
-```{r, echo=FALSE}
-suppressPackageStartupMessages(library(tidyverse))
-```
 ```{r}
+library(dplyr)
 library(socialroulette)
 today <- Sys.Date()
-frame <- tibble( id=sprintf("id%.02d",1:5), date=today)
+frame <- tibble::tibble( id=sprintf("id%.02d",1:5), date=today)
 round1 <- rsocialroulette(current_frame = frame, m=2, algorithm="srs")
 round1
 ```
@@ -79,7 +77,7 @@ Create a history of previous sessions as well as the current frame from a popula
 
 ```{r, message=FALSE}
 # Class of 100 students with 4 previous lectures
-students <- tibble(id=sprintf("id%.3d@student.su.se", 1:100))
+students <- tibble::tibble(id=sprintf("id%.3d@student.su.se", 1:100))
 session_dates <- seq(as.Date("2021-03-31"), length.out=4, by="1 week")
 
 # Simulate changing participation each week for the last 4 weeks (70% attendance)
@@ -138,8 +136,11 @@ partition <-  rsocialroulette(current_frame, past_sessions, m=4, algorithm="mdgp
 ```
 
 The partition can be visualized using the `igraph` package:
+```{r, echo=FALSE, results="hide", message=FALSE}
+library(igraph)
+```
+
 ```{r, echo=FALSE}
-suppressPackageStartupMessages(library(igraph))
 #igraph config
 igraph_options(vertex.label.family="sans", 
                vertex.size=8,

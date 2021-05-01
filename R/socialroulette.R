@@ -73,8 +73,8 @@ mdgp_solver <- function(mdgp_format_file, time_limit= 30) {
 #' @return File name of the generated specification file
 #' @examples
 #' frame  <- tibble::tibble(id=sprintf("id%.2d", 1:5), date=as.Date("2021-04-28"))
-#' round1 <- list(c("id02", "id03", "id04"), c("id01", "id05"))
-#' spec_file <- socialroulette:::write_mdgp_specfile(frame, past_sessions=list("2021-04-21"=round1), m=2)
+#' past_sessions <- list("2021-04-21"=list(c("id02", "id03", "id04"), c("id01", "id05")))
+#' spec_file <- socialroulette:::write_mdgp_specfile(frame, past_sessions=past_sessions, m=2)
 #' cat(stringr::str_c(readLines(spec_file), collapse="\n"))
 write_mdgp_specfile <- function(current_frame, past_sessions, m) {
   # Check that the current_frame has an id column
@@ -97,15 +97,15 @@ write_mdgp_specfile <- function(current_frame, past_sessions, m) {
   dist_frame <- sessions_to_distance(current_frame, past_sessions)
 
   # Make alternative index number (starting from zero) for MDGP-solver instead of the id
-  ids <- current_frame %>% dplyr::mutate(idx = row_number() - 1) %>% dplyr::select(id, idx)
+  ids <- current_frame %>% dplyr::mutate(idx = dplyr::row_number() - 1) %>% dplyr::select(id, idx)
   # and add this to the dist_frame
   dist_frame <-  dplyr::left_join(dist_frame, ids, by=c("id1"="id")) %>%
     dplyr::left_join(ids, by=c("id2"="id")) %>%
-    dplyr::rename(idx.id1 = idx.x, idx.id2=idx.y) %>%
+    dplyr::rename(idx.id1 = dplyr::all_of("idx.x"), idx.id2=dplyr::all_of("idx.y")) %>%
     #Make sure idx.id1 < idx.id2 as this is needed for the solver
     dplyr::mutate( idx.id1.ord = pmin(idx.id1, idx.id2),
-            idx.id2.ord = pmax(idx.id1, idx.id2)) %>%
-    dplyr::arrange(idx.id1.ord, idx.id2.ord)
+                   idx.id2.ord = pmax(idx.id1, idx.id2)) %>%
+    dplyr::arrange(all_of("idx.id1.ord"), dplyr::all_of("idx.id2.ord"))
 
   #Sanity check
   stopifnot( all(dist_frame$idx.id1.ord < dist_frame$idx.id2.ord))
@@ -113,7 +113,7 @@ write_mdgp_specfile <- function(current_frame, past_sessions, m) {
   #Make a temporary file
   tmp_file <- stringr::str_c(tempfile(), ".txt")
   writeLines(spec, tmp_file)
-  write_delim(dist_frame %>% select(idx.id1.ord,idx.id2.ord,dist), path=tmp_file, col_names=FALSE, append=TRUE)
+  readr::write_delim(dist_frame %>% dplyr::select(idx.id1.ord,idx.id2.ord,dist), file=tmp_file, col_names=FALSE, append=TRUE)
 
   #Done - return filename
   return(tmp_file)
@@ -129,12 +129,12 @@ read_mdgp_solutionfile <- function(file_name) {
   # Read first line containing n=N and G (no. groups)
   line1 <- readLines(file_name, n=1)
   # Extract number of groups
-  n_g <- str_replace(line1, ".*(G = )([0-9]+).*", "\\2") %>% as.numeric()
+  n_g <- stringr::str_replace(line1, ".*(G = )([0-9]+).*", "\\2") %>% as.numeric()
   # Extract number of individuals n
-  n <- str_replace(line1, "^(N = )([0-9]+).*", "\\2") %>% as.numeric()
+  n <- stringr::str_replace(line1, "^(N = )([0-9]+).*", "\\2") %>% as.numeric()
 
   #Read the groups
-  groups <- read_delim(file=file_name, skip=1 + n_g, delim=" ", col_names=c("id_int", "group")) %>%
+  groups <- readr::read_delim(file=file_name, skip=1 + n_g, delim=" ", col_names=c("id_int", "group")) %>%
     dplyr::mutate(idx = as.numeric(id_int)+1,
            group = as.numeric(group) + 1) %>%
     dplyr::select(idx, group)
@@ -159,9 +159,9 @@ make_partition_srs <- function(frame, m) {
   perm <- sample(seq_len(nrow(frame)))
 
   # Make a list of ids in each group
-  groups <- map(seq_len(n_g), function(i) {
+  groups <- purrr::map(seq_len(n_g), function(i) {
     idx <- perm[which(g == i)]
-    frame %>% slice(idx) %>% pull(id) %>% sort()
+    frame %>% dplyr::slice(idx) %>% dplyr::pull(id) %>% sort()
   })
 
   return(groups)
@@ -171,9 +171,9 @@ make_partition_srs <- function(frame, m) {
 #'
 #' @param group A vector of ids belonging to the same group
 #' @return a data.frame containing all pairs with id of the first being smaller than the id of the second entry
-#' @keywords internal
+#' @keywords internal‹
 group_to_pairs <- function(group) {
-  tidyr::expand_grid(id1=group, id2=group) %>% filter(id1 < id2)
+  tidyr::expand_grid(id1=group, id2=group) %>% dplyr::filter(id1 < id2)
 }
 
 #' Convert a list of partitionLists into a data.frame with all pairs
@@ -186,7 +186,7 @@ group_to_pairs <- function(group) {
 #' socialroulette:::sessions_to_pairs(sessions)
 
 sessions_to_pairs <- function(sessions) {
-  map_dfr(sessions,  ~ map_df(.x, ~ group_to_pairs(.x)), .id="date")
+  purrr::map_dfr(sessions,  ~ purrr::map_df(.x, ~ group_to_pairs(.x)), .id="date")
 }
 
 #' Function to convert a data.frame of pairs to a partition
@@ -198,7 +198,7 @@ pairs_to_partition <- function(pairs_df) {
   res <- list()
   for (i in seq_len(nrow(pairs_df))) {
     ids <- pairs_df[i, c("id1", "id2")] %>% as.character()
-    in_list <- map_lgl(res, function(l) any(ids %in% l))
+    in_list <- purrr::map_lgl(res, function(l) any(ids %in% l))
     if (any(in_list)) {
       if (sum(in_list) == 1) {
         # Add to bucket
@@ -227,9 +227,9 @@ pairs_to_partition <- function(pairs_df) {
 #' all.equal(sessions, sessions2)
 pairs_to_session <- function(pairs) {
 
-  sessions <- pairs %>% arrange(date) %>% group_split(date) %>%
-    map(~ pairs_to_partition(.x)) %>%
-    setNames(pairs %>% pull(date) %>% unique())
+  sessions <- pairs %>% dplyr::arrange(date) %>% dplyr::group_split(date) %>%
+    purrr::map(~ pairs_to_partition(.x)) %>%
+    setNames(pairs %>% dplyr::pull(date) %>% unique())
 
   return(sessions)
 }
@@ -249,18 +249,18 @@ pairs_to_session <- function(pairs) {
 
 sessions_to_distance <- function(current_frame, past_sessions) {
   #Make all potential pairs in current_frame
-  current_pairs <- tidyr::expand_grid(id1=current_frame %>%  pull(id),
-                               id2=current_frame %>%  pull(id)) %>%
+  current_pairs <- tidyr::expand_grid(id1=current_frame %>%  dplyr::pull(id),
+                               id2=current_frame %>%  dplyr::pull(id)) %>%
     dplyr::filter(id1 < id2) %>%
     dplyr::mutate(date = current_frame$date[1])
 
   #If there are no past sessions then no need to do more.
   if (is.null(past_sessions)) {
-    return(current_pairs %>% mutate(dist=1))
+    return(current_pairs %>% dplyr::mutate(dist=1))
   }
 
   #Make the pairs data.frame for each session
-  past_pairs <- sessions_to_pairs( past_sessions) #map_dfr(past_sessions,  ~ map_df(.x, ~ group_to_pairs(.x)), .id="date")
+  past_pairs <- sessions_to_pairs( past_sessions)
 
   #Define distance to today for those who have not met so far - special case if only one past value
   Delta <- rbind(current_pairs, past_pairs) %>%
@@ -270,17 +270,17 @@ sessions_to_distance <- function(current_frame, past_sessions) {
     diff() %>%
     mean() %>% as.numeric()
   # Compute with Delta
-  date_no_meet <- (past_pairs %>% pull(date) %>% as.Date() %>%  min() ) - Delta
-  dist_today <- ((current_pairs %>% pull(date) %>% .[[1]]) - date_no_meet) %>% as.numeric()
+  date_no_meet <- (past_pairs %>% dplyr::pull(date) %>% as.Date() %>%  min() ) - Delta
+  dist_today <- ((current_pairs %>% dplyr::pull(date) %>% .[[1]]) - date_no_meet) %>% as.numeric()
 
   #Compute dist in days for pairs to past time where they met in a session
   current_dist <- current_pairs %>%
-    left_join(past_pairs %>% select(id1, id2, date), by=c("id1", "id2"), suffix=c(".current",".past")) %>%
-    mutate(dist = difftime(date.current, date.past, unit="days") %>% round() %>%  as.numeric(),
-           dist = if_else(is.na(dist), dist_today, dist))
+    dplyr::left_join(past_pairs %>% dplyr::select(id1, id2, date), by=c("id1", "id2"), suffix=c(".current",".past")) %>%
+    dplyr::mutate(dist = difftime(date.current, date.past, units="days") %>% round() %>%  as.numeric(),
+           dist = dplyr::if_else(is.na(dist), dist_today, dist))
 
   #Return
-  return(current_dist %>% rename(date = `date.current`) %>% select(-date.past))
+  return(current_dist %>% dplyr::rename(date = `date.current`) %>% dplyr::select(-date.past))
 }
 
 #' Take a frame including a `group` column and convert this to a corresponding partitionList
@@ -291,7 +291,7 @@ sessions_to_distance <- function(current_frame, past_sessions) {
 #' @return A list of vectors, where each vector contains all individuals in the corresponding group
 frame_to_partitionList <- function(frame) {
   n_g <- length(unique(frame$group))
-  map(seq_len(n_g), ~ frame %>% filter(group == .x) %>% pull(id) %>% sort())
+  purrr::map(seq_len(n_g), ~ frame %>% filter(group == .x) %>% dplyr::pull(id) %>% sort())
 }
 
 #' Take a partitionList and convert it to frame representation
@@ -318,9 +318,9 @@ partition_to_frame <- function(partition, frame ) {
   stopifnot(nrow(partition) == nrow(frame))
 
   #Match idx to frame
-  frame %>% mutate(idx = row_number()) %>%
-    left_join(partition, by="idx") %>%
-    select(-idx)
+  frame %>% dplyr::mutate(idx = dplyr::row_number()) %>%
+    dplyr::left_join(partition, by="idx") %>%
+    dplyr::select(-idx)
 }
 
 #' Make a new lunch roulette session maximizing the gossip to exchange
@@ -366,7 +366,7 @@ rsocialroulette <- function(current_frame, past_sessions=NULL, m, algorithm=c("m
   }
 
   #Group sizes etc.
-  groups <- map_dbl(partitionList, length)
+  groups <- purrr::map_dbl(partitionList, length)
 
   cat(stringr::str_c("Created ", length(groups), " groups of sizes ", stringr::str_c(groups, collapse=" "), ".\n"))
 
