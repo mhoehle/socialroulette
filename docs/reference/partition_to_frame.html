@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Match a partition based on index (i.e. MGDP output) to ids in the frame — partition_to_frame • socialroulette</title>
+<title>Take a partition and convert it to frame representation — partition_to_frame • socialroulette</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Match a partition based on index (i.e. MGDP output) to ids in the frame — partition_to_frame" />
-<meta property="og:description" content="Match a partition based on index (i.e. MGDP output) to ids in the frame" />
+<meta property="og:title" content="Take a partition and convert it to frame representation — partition_to_frame" />
+<meta property="og:description" content="The resulting tibble will have an additional column group" />
 
 
 
@@ -115,34 +115,41 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Match a partition based on index (i.e. MGDP output) to ids in the frame</h1>
+    <h1>Take a partition and convert it to frame representation</h1>
     
     <div class="hidden name"><code>partition_to_frame.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Match a partition based on index (i.e. MGDP output) to ids in the frame</p>
+    <p>The resulting <code>tibble</code> will have an additional column <code>group</code></p>
     </div>
 
-    <pre class="usage"><span class='fu'>partition_to_frame</span><span class='op'>(</span><span class='va'>partition</span>, <span class='va'>frame</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>partition_to_frame</span><span class='op'>(</span><span class='va'>l</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>partition</th>
-      <td><p>A tibble containing idx and group columns (MDGP output)</p></td>
-    </tr>
-    <tr>
-      <th>frame</th>
-      <td><p>A frame (i.e. a tibble with at least a column denoted `id`) to match the idx to. This has to be the frame used to generate the partition in the first place.</p></td>
+      <th>A</th>
+      <td><p>partition, i.e. list of vectors, where each vector contains all individuals in the corresponding group</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>The `frame` tibble augmented with an additional `group` column</p>
+    <p>frame The frame with `id` and `group` columns to convert</p>
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='va'>round1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"id02"</span>, <span class='st'>"id03"</span>, <span class='st'>"id04"</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"id05"</span>, <span class='st'>"id01"</span><span class='op'>)</span><span class='op'>)</span>
+<span class='fu'>socialroulette</span><span class='fu'>:::</span><span class='fu'>partition_to_frame</span><span class='op'>(</span><span class='va'>round1</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span style='color: #949494;'># A tibble: 5 x 2</span><span>
+#&gt;   id    group
+#&gt;   </span><span style='color: #949494;font-style: italic;'>&lt;chr&gt;</span><span> </span><span style='color: #949494;font-style: italic;'>&lt;int&gt;</span><span>
+#&gt; </span><span style='color: #BCBCBC;'>1</span><span> id02      1
+#&gt; </span><span style='color: #BCBCBC;'>2</span><span> id03      1
+#&gt; </span><span style='color: #BCBCBC;'>3</span><span> id04      1
+#&gt; </span><span style='color: #BCBCBC;'>4</span><span> id05      2
+#&gt; </span><span style='color: #BCBCBC;'>5</span><span> id01      2</div></span></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

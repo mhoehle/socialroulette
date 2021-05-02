@@ -60,7 +60,7 @@ mdgp_solver <- function(mdgp_format_file, time_limit= 30) {
 
 #' Convert partition specification to Lai and Hao (2016) MDGP solver input specification.
 #'
-#' Generate a \code{tempfile()} containing the appropriate specification formed from \code{current_frame} and \code{past_sessions}.
+#' Generate a \code{tempfile()} containing the appropriate specification formed from \code{current_frame} and \code{past_partitions}.
 #'
 #' The specification format has the following header line
 #' \deqn{n\> m\> ds\> n_1\> n_1\> \ldots n_G \> n_G}
@@ -68,15 +68,15 @@ mdgp_solver <- function(mdgp_format_file, time_limit= 30) {
 #' upper boundary for each group size. The keyword `ds` for the solver in the above means that the groups can be of different sizes as determined by the respective \eqn{n_g}.
 #'
 #' @param current_frame A pair-distance tibble. The frame needs to contain a column denoted `id`
-#' @param past_sessions A list of sessions. Each sessions consists of a session specification in list format.
+#' @param past_partitions A named list of partitions, where the names correspond to the date when the partition was used.
 #' @param m The minimum group size, i.e. all groups have size at least m
 #' @return File name of the generated specification file
 #' @examples
 #' frame  <- tibble::tibble(id=sprintf("id%.2d", 1:5), date=as.Date("2021-04-28"))
-#' past_sessions <- list("2021-04-21"=list(c("id02", "id03", "id04"), c("id01", "id05")))
-#' spec_file <- socialroulette:::write_mdgp_specfile(frame, past_sessions=past_sessions, m=2)
+#' past_partitions <- list("2021-04-21"=list(c("id02", "id03", "id04"), c("id01", "id05")))
+#' spec_file <- socialroulette:::write_mdgp_specfile(frame, past_partitions=past_partitions, m=2)
 #' cat(stringr::str_c(readLines(spec_file), collapse="\n"))
-write_mdgp_specfile <- function(current_frame, past_sessions, m) {
+write_mdgp_specfile <- function(current_frame, past_partitions, m) {
   # Check that the current_frame has an id column
   stopifnot( "id" %in% colnames(current_frame))
 
@@ -94,7 +94,7 @@ write_mdgp_specfile <- function(current_frame, past_sessions, m) {
   spec <- stringr::str_c(n, " ",n_g, " ds ", stringr::str_c(g_spec, collapse=" "))
 
   # Compute distances to last meet for each id in current_frame
-  dist_frame <- sessions_to_distance(current_frame, past_sessions)
+  dist_frame <- partitions_to_distance(current_frame, past_partitions)
 
   # Make alternative index number (starting from zero) for MDGP-solver instead of the id
   ids <- current_frame %>% dplyr::mutate(idx = dplyr::row_number() - 1) %>% dplyr::select(id, idx)
@@ -171,28 +171,28 @@ make_partition_srs <- function(frame, m) {
 #'
 #' @param group A vector of ids belonging to the same group
 #' @return a data.frame containing all pairs with id of the first being smaller than the id of the second entry
-#' @keywords internal‹
+#' @keywords internal
 group_to_pairs <- function(group) {
   tidyr::expand_grid(id1=group, id2=group) %>% dplyr::filter(id1 < id2)
 }
 
-#' Convert a list of partitionLists into a data.frame with all pairs
+#' Convert a list of partitions into a data.frame with all pairs
 #'
 #' The name of the list contain the date at which each partition was used.
-#' @param sessions A list of past partitions, i.e. a list where each entry is a partitionList
+#' @param partitions A list of past partitions, i.e. a named list where each entry is a partition and the names reflect the dates the partition were used
 #' @examples
-#' sessions <- list("2021-04-21"=list(c("id02", "id03", "id04"), c("id05", "id01")),
+#' partitions <- list("2021-04-21"=list(c("id02", "id03", "id04"), c("id05", "id01")),
 #'                   "2021-04-28"=list(c("id05", "id03", "id04"), c("id02", "id01")))
-#' socialroulette:::sessions_to_pairs(sessions)
+#' socialroulette:::partitions_to_pairs(partitions)
 
-sessions_to_pairs <- function(sessions) {
-  purrr::map_dfr(sessions,  ~ purrr::map_df(.x, ~ group_to_pairs(.x)), .id="date")
+partitions_to_pairs <- function(partitions) {
+  purrr::map_dfr(partitions,  ~ purrr::map_df(.x, ~ group_to_pairs(.x)), .id="date")
 }
 
 #' Function to convert a data.frame of pairs to a partition
 #'
 #' @param pairs_df data.frame containing the pairs, i.e. it has columns date, id1 and id2
-#' @return A partitionList
+#' @return A named list of partitions
 #' @keywords internal
 pairs_to_partition <- function(pairs_df) {
   res <- list()
@@ -216,51 +216,54 @@ pairs_to_partition <- function(pairs_df) {
   return(res)
 }
 
-#' Convert a pairs data.frame into a session list
+#' Convert a pairs data.frame into a partition list
 #'
-#' @param pairs A \code{data.frame} with columns date and \code{id1} and \code{id2}.
+#' The function works by splitting the pairs data.frame by date and then apply the internal
+#' function pairs_to_partition to the resulting sub data.frame.
+#'
+#' @param pairs A \code{data.frame} with columns \code{date} and \code{id1} and \code{id2}.
+#' @seealso pairs_to_partition
 #' @examples
-#' sessions <- list("2021-04-21"=list(c("id02", "id03", "id04"), c("id01", "id05")),
+#' partitions <- list("2021-04-21"=list(c("id02", "id03", "id04"), c("id01", "id05")),
 #'                   "2021-04-28"=list(c("id03", "id04", "id05"), c("id01", "id02")))
-#' sessions2 <- sessions %>% socialroulette:::sessions_to_pairs() %>%
-#'                           socialroulette:::pairs_to_session()
-#' all.equal(sessions, sessions2)
-pairs_to_session <- function(pairs) {
+#' partitions2 <- partitions %>% socialroulette:::partitions_to_pairs() %>%
+#'                           socialroulette:::pairs_to_partitions()
+#' all.equal(partitions, partitions2)
+pairs_to_partitions <- function(pairs) {
 
-  sessions <- pairs %>% dplyr::arrange(date) %>% dplyr::group_split(date) %>%
+  partitions <- pairs %>% dplyr::arrange(date) %>% dplyr::group_split(date) %>%
     purrr::map(~ pairs_to_partition(.x)) %>%
     setNames(pairs %>% dplyr::pull(date) %>% unique())
 
-  return(sessions)
+  return(partitions)
 }
 
 
-#' Convert a list of sessions into a MDGP distance metric
+#' Convert a list of partitions into a MDGP distance metric
 #'
-#' @param past_sessions List of previous sessions
+#' @param past_partitions List of previous partitions
 #' @param current_frame The current frame
 #'
-#' @description A session is a data.frame containing the columns id1, id2 and date
 #' @examples
 #' frame  <- tibble::tibble(id=sprintf("id%.2d", 1:5), date=as.Date("2021-04-28"))
-#' sessions <- list("2021-04-14"=list(c("id02", "id03", "id04"), c("id01", "id05")),
+#' partitions <- list("2021-04-14"=list(c("id02", "id03", "id04"), c("id01", "id05")),
 #'                   "2021-04-21"=list(c("id03", "id04", "id05"), c("id01", "id02")))
-#' socialroulette:::sessions_to_distance(frame, sessions)
+#' socialroulette:::partitions_to_distance(frame, partitions)
 
-sessions_to_distance <- function(current_frame, past_sessions) {
+partitions_to_distance <- function(current_frame, past_partitions) {
   #Make all potential pairs in current_frame
   current_pairs <- tidyr::expand_grid(id1=current_frame %>%  dplyr::pull(id),
                                id2=current_frame %>%  dplyr::pull(id)) %>%
     dplyr::filter(id1 < id2) %>%
     dplyr::mutate(date = current_frame$date[1])
 
-  #If there are no past sessions then no need to do more.
-  if (is.null(past_sessions)) {
+  #If there are no past partitions then no need to do more.
+  if (is.null(past_partitions)) {
     return(current_pairs %>% dplyr::mutate(dist=1))
   }
 
-  #Make the pairs data.frame for each session
-  past_pairs <- sessions_to_pairs( past_sessions)
+  #Make the pairs data.frame for each partition
+  past_pairs <- partitions_to_pairs( past_partitions)
 
   #Define distance to today for those who have not met so far - special case if only one past value
   Delta <- rbind(current_pairs, past_pairs) %>%
@@ -273,7 +276,7 @@ sessions_to_distance <- function(current_frame, past_sessions) {
   date_no_meet <- (past_pairs %>% dplyr::pull(date) %>% as.Date() %>%  min() ) - Delta
   dist_today <- ((current_pairs %>% dplyr::pull(date) %>% .[[1]]) - date_no_meet) %>% as.numeric()
 
-  #Compute dist in days for pairs to past time where they met in a session
+  #Compute dist in days for pairs to past time where they met in a partition
   current_dist <- current_pairs %>%
     dplyr::left_join(past_pairs %>% dplyr::select(id1, id2, date), by=c("id1", "id2"), suffix=c(".current",".past")) %>%
     dplyr::mutate(dist = difftime(date.current, date.past, units="days") %>% round() %>%  as.numeric(),
@@ -283,92 +286,107 @@ sessions_to_distance <- function(current_frame, past_sessions) {
   return(current_dist %>% dplyr::rename(date = `date.current`) %>% dplyr::select(-date.past))
 }
 
-#' Take a frame including a `group` column and convert this to a corresponding partitionList
+#' Take a frame and convert this to a corresponding partition
 #'
-#' This is a small useful converter function
+#' This is a small useful converter function for taking a tibble including a `group` and `id` column and convert it to a partition.
 #'
 #' @param frame The frame with `id` and `group` columns to convert
-#' @return A list of vectors, where each vector contains all individuals in the corresponding group
-frame_to_partitionList <- function(frame) {
+#' @return A partition, i.e. a list of vectors, where each vector contains all individuals in the corresponding group
+#' @keywords internal
+#' @examples
+#' p <- tibble::tibble(id=sprintf("id%.02d",1:5), group=c(1,1,1,2,2))
+#' socialroulette:::frame_to_partition(p)
+frame_to_partition <- function(frame) {
   n_g <- length(unique(frame$group))
   purrr::map(seq_len(n_g), ~ frame %>% filter(group == .x) %>% dplyr::pull(id) %>% sort())
 }
 
-#' Take a partitionList and convert it to frame representation
+#' Take a partition and convert it to frame representation
 #'
 #' The resulting \code{tibble} will have an additional column \code{group}
 #'
-#' @param A partitionList, i.e. list of vectors, where each vector contains all individuals in the corresponding group
+#' @param A partition, i.e. list of vectors, where each vector contains all individuals in the corresponding group
 #' @return frame The frame with `id` and `group` columns to convert
 #' @examples
 #' round1 <- list(c("id02", "id03", "id04"), c("id05", "id01"))
-#' socialroulette:::partitionList_to_frame(round1)
-partitionList_to_frame <- function(l) {
+#' socialroulette:::partition_to_frame(round1)
+partition_to_frame <- function(l) {
   purrr::map_df( seq_len(length(l)), ~ tibble::tibble(id=l[[.x]], group=.x))
 }
 
 
 #' Match a partition based on index (i.e. MGDP output) to ids in the frame
 #'
-#' @param partition A tibble containing idx and group columns (MDGP output)
+#' @param mdgp_partition A tibble containing idx and group columns (MDGP output)
 #' @param frame A frame (i.e. a tibble with at least a column denoted `id`) to match the idx to. This has to be the frame used to generate the partition in the first place.
 #' @return The `frame` tibble augmented with an additional `group` column
-partition_to_frame <- function(partition, frame ) {
+#' @keywords internal
+mdgp_partition_to_frame <- function(mdgp_partition, frame ) {
   #Sanity checks
-  stopifnot(nrow(partition) == nrow(frame))
+  stopifnot(nrow(mdgp_partition) == nrow(frame))
 
   #Match idx to frame
   frame %>% dplyr::mutate(idx = dplyr::row_number()) %>%
-    dplyr::left_join(partition, by="idx") %>%
+    dplyr::left_join(mdgp_partition, by="idx") %>%
     dplyr::select(-idx)
 }
 
-#' Make a new lunch roulette session maximizing the gossip to exchange
+#' Make a new lunch roulette partition maximizing the gossip to exchange
 #'
 #' One can either use simple random sampling (srs) to generate the partition or
 #' solve the maximally diverse grouping problem (mdgp) using the algorithm by
 #' Lai and Hao (2016) in order to maximize time since last meets over all groups.
 #'
-#' @param current_frame A tibble containing the participants of the current round, i.e. it has a column `id` containing a unique identifier and a `date` column representing the date of the session.
-#' @param past_sessions A list of partitionLists, i.e. each partition is a list of vectors containing the id of the members of the corresponding group. The default \code{NULL} means that no previous sessions are taken into account.
+#' @param current_frame A tibble containing the participants of the current round, i.e. it has a column `id` containing a unique identifier and a `date` column representing the date of the partition.
 #' @param m minimum group size, i.e. all groups will be at least size m.
-#' @return A partitionList containing the partitioning of current_frame maximizing the overall sum of gossip to be exchanged.
+#' @return A partitioning of current_frame maximizing the overall sum of gossip to be exchanged.
 #'
 #' @seealso mdgp_solver
 #' @references Höhle M (2021), Long time, no see: Virtual Lunch Roulette, Blog post, \url{https://staff.math.su.se/hoehle/blog/2021/04/04/socialsamp.html}
 #' @references Xiangjing Lai and Jin-Kao Hao (2016). *Iterated maxima search for the maximally
 #' diverse grouping problem*. European Journal of Operational Research, 254(3), pp. 780-800,
 #' https://doi.org/10.1016/j.ejor.2016.05.018
+#' @examples
+#' today <- Sys.Date()
+#' frame <- tibble::tibble( id=sprintf("id%.02d",1:5), date=today)
+#' round1 <- rsocialroulette(current_frame = frame, m=2, algorithm="srs")
+#' round1
+#'
+#' #Generate list of past partitions
+#' past_partitions <- list(round1) %>% setNames(today)
+#' frame2 <- frame %>% dplyr::mutate(date = today+7)
+#' round2 <- rsocialroulette(current_frame = frame2, past_partitions=past_partitions, m=2, algorithm="mdgp")
+#' round2
 #' @export
-rsocialroulette <- function(current_frame, past_sessions=NULL, m, algorithm=c("mdgp", "srs")) {
+rsocialroulette <- function(current_frame, past_partitions=NULL, m, algorithm=c("mdgp", "srs")) {
   # Sanity checks
   stopifnot( "id" %in% colnames(current_frame))
   stopifnot( "date" %in% colnames(current_frame))
-  stopifnot( all(!is.na(as.Date(names(past_sessions)))))
+  stopifnot( all(!is.na(as.Date(names(past_partitions)))))
   algorithm <- match.arg(algorithm, choices=c("mdgp", "srs"))
-  if (!is.null(past_sessions) & (algorithm == "srs")) {
-    stop("Simple random sampling (srs) does not work with past session information.")
+  if (!is.null(past_partitions) & (algorithm == "srs")) {
+    stop("Simple random sampling (srs) does not work with past partition information.")
   }
   #Debug info
-  cat(stringr::str_c("Partitioning ", nrow(current_frame), " individuals into groups of at least ", m, " (", ifelse(is.null(past_sessions),"no past sessions", "Optimizing wrt. past sessions"),").\n"))
+  cat(stringr::str_c("Partitioning ", nrow(current_frame), " individuals into groups of at least ", m, " (", ifelse(is.null(past_partitions),"no past partitions", "Optimizing wrt. past partitions"),").\n"))
 
-  #Read output and convert it to a partitionList
+  #Read output and convert it to a partition
   if (algorithm == "mdgp") {
     #Make a specification file and solve it
-    spec_file <- write_mdgp_specfile(current_frame, past_sessions, m=m)
+    spec_file <- write_mdgp_specfile(current_frame, past_partitions, m=m)
     res <- mdgp_solver(spec_file)
-    #Read output as a partitionList
-    partitionList <- read_mdgp_solutionfile(res$solution_file) %>%
-      partition_to_frame(frame=current_frame) %>%
-      frame_to_partitionList()
+    #Read output as a partition
+    partition <- read_mdgp_solutionfile(res$solution_file) %>%
+      mdgp_partition_to_frame(frame=current_frame) %>%
+      frame_to_partition()
   } else {
-    partitionList <- make_partition_srs(current_frame, m=m)
+    partition <- make_partition_srs(current_frame, m=m)
   }
 
   #Group sizes etc.
-  groups <- purrr::map_dbl(partitionList, length)
+  groups <- purrr::map_dbl(partition, length)
 
   cat(stringr::str_c("Created ", length(groups), " groups of sizes ", stringr::str_c(groups, collapse=" "), ".\n"))
 
-  return(partitionList)
+  return(partition)
 }

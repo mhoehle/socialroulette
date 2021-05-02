@@ -31,6 +31,9 @@ The aim is to assign $n$ participants into groups of size at least $m$. If $m$ i
 
 ```{r}
 library(dplyr)
+library(purrr)
+library(readr)
+library(stringr)
 library(socialroulette)
 today <- Sys.Date()
 frame <- tibble::tibble( id=sprintf("id%.02d",1:5), date=today)
@@ -43,17 +46,17 @@ It can be [shown](https://staff.math.su.se/hoehle/blog/2021/04/04/socialsamp.htm
 
 ```{r}
 #List of past partitions
-past_sessions <- list(round1) %>% setNames(today)
+past_partitions <- list(round1) %>% setNames(today)
 #Same individuals one week later
 frame2 <- frame %>% mutate(date = today+7)
 #Check for each possible pair in frame2 how long ago (in days) it would be that they met. 
-socialroulette:::sessions_to_distance(frame2, past_sessions)
+socialroulette:::partitions_to_distance(frame2, past_partitions)
 ```
 
 For comparison, we now use maximally diverse grouping problem solver on the same toy example. This corresponds to taking a sledgehammer to crush a nut, but helps to show how the package works:
 
 ```{r, cache=TRUE, results="hide"}
-round2 <- rsocialroulette(current_frame = frame2, past_sessions=past_sessions, m=2, algorithm="mdgp")
+round2 <- rsocialroulette(current_frame = frame2, past_partitions=past_partitions, m=2, algorithm="mdgp")
 ```
 ```{r}
 round2
@@ -62,8 +65,8 @@ round2
 Using this partitions we get the following re-unions, i.e. pairs of individuals which in round 2 meet again, despite already being in the same group in round 1.
 Note that it is easy to show that with 5 participants and $m=2$, at least one re-union is needed. 
 ```{r}
-sessions <- list(list(last_week = round1), list(this_week = round2))
-pairs <- map(sessions, ~ socialroulette:::sessions_to_pairs(.x))
+partitions <- list(list(last_week = round1), list(this_week = round2))
+pairs <- map(partitions, ~ socialroulette:::partitions_to_pairs(.x))
 inner_join(pairs[[1]], pairs[[2]], by=c("id1", "id2"))
 ```
 
@@ -73,38 +76,38 @@ We continue with a slightly more advanced example, where we have a class with 10
 Since for various reasons not all students show up to each class, the sampling frame of individuals to be partitioned each week changes accordingly. Still, we would like to make the partitioning of the current week s.t. students get as many new acquaintances as possible.
 
 
-Create a history of previous sessions as well as the current frame from a population of 100 individuals participating in the social roulette.
+Create a history of previous partitions as well as the current frame from a population of 100 individuals participating in the social roulette.
 
 ```{r, message=FALSE}
 # Class of 100 students with 4 previous lectures
 students <- tibble::tibble(id=sprintf("id%.3d@student.su.se", 1:100))
-session_dates <- seq(as.Date("2021-03-31"), length.out=4, by="1 week")
+partition_dates <- seq(as.Date("2021-03-31"), length.out=4, by="1 week")
 
 # Simulate changing participation each week for the last 4 weeks (70% attendance)
-frames <- purrr::map_df( session_dates, ~ 
+frames <- map_df( partition_dates, ~ 
             students %>% slice_sample(n = rbinom(1,nrow(.), prob=0.7)) %>% mutate(date=.x))
 
-# Generate some past sessions using simple random sampling
-past_sessions <- frames %>% 
+# Generate some past partitions using simple random sampling
+past_partitions <- frames %>% 
    group_split(date) %>%
    map(~rsocialroulette(current_frame=.x, m=4, algorithm="srs")) %>%
-   setNames(session_dates)
+   setNames(partition_dates)
 ```
 
-For a more realist scenario, we pretend that each previous session has been saved
+For a more realist scenario, we pretend that each previous partition has been saved
 as a .csv file. For example like:
 ```{r}
 # Simulate the storage of each partition as a .csv file to disk
 # with 3 columns: date, id1 and id2, i.e. all pairs
 temp_dir <- tempdir() #adjust path to your setting if needed
-socialroulette:::sessions_to_pairs( past_sessions ) %>% 
+socialroulette:::partitions_to_pairs( past_partitions ) %>% 
   group_split(date) %>%
-  walk(~  write_csv(x=.x, path=file.path(temp_dir, str_c("socialroulette-", .$date[1], ".csv"))))
+  walk(~  write_csv(x=.x, path=file.path(temp_dir, stringr::str_c("socialroulette-", .$date[1], ".csv"))))
 ```
 
 We thus read the partitions from disk and need to convert between the stored pair format (i.e. a data.frame listing each pair being in the same group as id1, id2 together with the corresponding date) back to the partition list format. This can be done as follows
 ```{r, echo=FALSE, results="hide"}
-newest_file <- file.path(temp_dir, str_c("socialroulette-2021-04-28.csv"))
+newest_file <- file.path(temp_dir, stringr::str_c("socialroulette-2021-04-28.csv"))
 if (file.exists(newest_file)) {
   file.remove(newest_file)
 }
@@ -118,10 +121,9 @@ pairs <- map_df(list.files(path=temp_dir, pattern="socialroulette.*", full.names
 A small sanity check to ensure that the write and read did not really change any information:
 ```{r}
 # Convert into a pairs data.frame 
-past_sessions2 <- pairs %>% socialroulette:::pairs_to_session()
+past_partitions2 <- pairs %>% socialroulette:::pairs_to_partitions()
 # Sanity check
-all.equal(past_sessions, past_sessions2)  
-
+all.equal(past_partitions, past_partitions2)  
 ```
 
 
@@ -129,10 +131,10 @@ Everything is thus now in place to generate the partition:
 ```{r, results="hide", message=FALSE, cache=TRUE}
 # Who is in the next class?
 current_frame <-  students %>% slice_sample(n = rbinom(1,nrow(.), prob=0.7)) %>%
-  mutate(date=max(session_dates) + diff(session_dates) %>% mean())
+  mutate(date=max(partition_dates) + diff(partition_dates) %>% mean())
 
 # Make the partition, which tries to bring together those who have not met in a long time
-partition <-  rsocialroulette(current_frame, past_sessions, m=4, algorithm="mdgp")
+partition <-  rsocialroulette(current_frame, past_partitions, m=4, algorithm="mdgp")
 ```
 
 The partition can be visualized using the `igraph` package:
@@ -151,7 +153,7 @@ igraph_options(vertex.label.family="sans",
                edge.arrow.size=0.1)
 
 # Convert to frame specification with group column
-edges_df <- socialroulette:::partitionList_to_frame(partition) %>% 
+edges_df <- socialroulette:::partition_to_frame(partition) %>% 
   mutate(id = str_replace(id, "@student.su.se", ""))
 
 #Get group of each
@@ -171,17 +173,17 @@ Of course the partition can be stored to file as before in order to include it i
 ```{r}
 list(partition) %>% 
   setNames(current_frame %>% slice(1) %>% pull(date)) %>%
-  socialroulette:::sessions_to_pairs() %>% 
-  write_csv(path=file.path(temp_dir, str_c("socialroulette-", .$date[1],".csv")))
+  socialroulette:::partitions_to_pairs() %>% 
+  write_csv(path=file.path(temp_dir, stringr::str_c("socialroulette-", .$date[1],".csv")))
 ```
 
 or can be stored in a Zoom compatible breakout room specification format:
 ```{r}
 partition %>% 
-  socialroulette:::partitionList_to_frame() %>% 
+  socialroulette:::partition_to_frame() %>% 
   rename(email=id) %>% 
   mutate(room = sprintf("room%.03d",group)) %>% 
   select(room, email) %>% 
-  write_csv(path=file.path(temp_dir, str_c("zoom-breakoutrooms.csv")))
+  write_csv(path=file.path(temp_dir, stringr::str_c("zoom-breakoutrooms.csv")))
 ```
 

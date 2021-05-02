@@ -2,18 +2,20 @@
 % Please edit documentation in R/socialroulette.R
 \name{partition_to_frame}
 \alias{partition_to_frame}
-\title{Match a partition based on index (i.e. MGDP output) to ids in the frame}
+\title{Take a partition and convert it to frame representation}
 \usage{
-partition_to_frame(partition, frame)
+partition_to_frame(l)
 }
 \arguments{
-\item{partition}{A tibble containing idx and group columns (MDGP output)}
-
-\item{frame}{A frame (i.e. a tibble with at least a column denoted `id`) to match the idx to. This has to be the frame used to generate the partition in the first place.}
+\item{A}{partition, i.e. list of vectors, where each vector contains all individuals in the corresponding group}
 }
 \value{
-The `frame` tibble augmented with an additional `group` column
+frame The frame with `id` and `group` columns to convert
 }
 \description{
-Match a partition based on index (i.e. MGDP output) to ids in the frame
+The resulting \code{tibble} will have an additional column \code{group}
+}
+\examples{
+round1 <- list(c("id02", "id03", "id04"), c("id05", "id01"))
+socialroulette:::partition_to_frame(round1)
 }

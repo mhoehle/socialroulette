@@ -140,39 +140,33 @@
       <tr>
         
         <td>
-          <p><code><a href="frame_to_partitionList.html">frame_to_partitionList()</a></code> </p>
-        </td>
-        <td><p>Take a frame including a `group` column and convert this to a corresponding partitionList</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="group_to_pairs.html">group_to_pairs()</a></code> </p>
-        </td>
-        <td><p>Make all pairs within a group</p></td>
-      </tr><tr>
-        
-        <td>
           <p><code><a href="mdgp_solver.html">mdgp_solver()</a></code> </p>
         </td>
         <td><p>Maximally diverse grouping problem solver based on Lai and Hao (2016)</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="pairs_to_session.html">pairs_to_session()</a></code> </p>
+          <p><code><a href="pairs_to_partitions.html">pairs_to_partitions()</a></code> </p>
         </td>
-        <td><p>Convert a pairs data.frame into a session list</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="partitionList_to_frame.html">partitionList_to_frame()</a></code> </p>
-        </td>
-        <td><p>Take a partitionList and convert it to frame representation</p></td>
+        <td><p>Convert a pairs data.frame into a partition list</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="partition_to_frame.html">partition_to_frame()</a></code> </p>
         </td>
-        <td><p>Match a partition based on index (i.e. MGDP output) to ids in the frame</p></td>
+        <td><p>Take a partition and convert it to frame representation</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="partitions_to_distance.html">partitions_to_distance()</a></code> </p>
+        </td>
+        <td><p>Convert a list of partitions into a MDGP distance metric</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="partitions_to_pairs.html">partitions_to_pairs()</a></code> </p>
+        </td>
+        <td><p>Convert a list of partitions into a data.frame with all pairs</p></td>
       </tr><tr>
         
         <td>
@@ -184,19 +178,7 @@
         <td>
           <p><code><a href="rsocialroulette.html">rsocialroulette()</a></code> </p>
         </td>
-        <td><p>Make a new lunch roulette session maximizing the gossip to exchange</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="sessions_to_distance.html">sessions_to_distance()</a></code> </p>
-        </td>
-        <td><p>Convert a list of sessions into a MDGP distance metric</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="sessions_to_pairs.html">sessions_to_pairs()</a></code> </p>
-        </td>
-        <td><p>Convert a list of partitionLists into a data.frame with all pairs</p></td>
+        <td><p>Make a new lunch roulette partition maximizing the gossip to exchange</p></td>
       </tr><tr>
         
         <td>

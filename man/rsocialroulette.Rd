@@ -2,29 +2,39 @@
 % Please edit documentation in R/socialroulette.R
 \name{rsocialroulette}
 \alias{rsocialroulette}
-\title{Make a new lunch roulette session maximizing the gossip to exchange}
+\title{Make a new lunch roulette partition maximizing the gossip to exchange}
 \usage{
 rsocialroulette(
   current_frame,
-  past_sessions = NULL,
+  past_partitions = NULL,
   m,
   algorithm = c("mdgp", "srs")
 )
 }
 \arguments{
-\item{current_frame}{A tibble containing the participants of the current round, i.e. it has a column `id` containing a unique identifier and a `date` column representing the date of the session.}
-
-\item{past_sessions}{A list of partitionLists, i.e. each partition is a list of vectors containing the id of the members of the corresponding group. The default \code{NULL} means that no previous sessions are taken into account.}
+\item{current_frame}{A tibble containing the participants of the current round, i.e. it has a column `id` containing a unique identifier and a `date` column representing the date of the partition.}
 
 \item{m}{minimum group size, i.e. all groups will be at least size m.}
 }
 \value{
-A partitionList containing the partitioning of current_frame maximizing the overall sum of gossip to be exchanged.
+A partitioning of current_frame maximizing the overall sum of gossip to be exchanged.
 }
 \description{
 One can either use simple random sampling (srs) to generate the partition or
 solve the maximally diverse grouping problem (mdgp) using the algorithm by
 Lai and Hao (2016) in order to maximize time since last meets over all groups.
+}
+\examples{
+today <- Sys.Date()
+frame <- tibble::tibble( id=sprintf("id\%.02d",1:5), date=today)
+round1 <- rsocialroulette(current_frame = frame, m=2, algorithm="srs")
+round1
+
+#Generate list of past partitions
+past_partitions <- list(round1) \%>\% setNames(today)
+frame2 <- frame \%>\% dplyr::mutate(date = today+7)
+round2 <- rsocialroulette(current_frame = frame2, past_partitions=past_partitions, m=2, algorithm="mdgp")
+round2
 }
 \references{
 Höhle M (2021), Long time, no see: Virtual Lunch Roulette, Blog post, \url{https://staff.math.su.se/hoehle/blog/2021/04/04/socialsamp.html}

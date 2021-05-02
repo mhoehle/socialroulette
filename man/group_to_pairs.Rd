@@ -15,4 +15,4 @@ a data.frame containing all pairs with id of the first being smaller than the id
 \description{
 Make all pairs within a group
 }
-\keyword{internal‹}
+\keyword{internal}

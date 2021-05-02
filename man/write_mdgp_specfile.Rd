@@ -4,12 +4,12 @@
 \alias{write_mdgp_specfile}
 \title{Convert partition specification to Lai and Hao (2016) MDGP solver input specification.}
 \usage{
-write_mdgp_specfile(current_frame, past_sessions, m)
+write_mdgp_specfile(current_frame, past_partitions, m)
 }
 \arguments{
 \item{current_frame}{A pair-distance tibble. The frame needs to contain a column denoted `id`}
 
-\item{past_sessions}{A list of sessions. Each sessions consists of a session specification in list format.}
+\item{past_partitions}{A named list of partitions, where the names correspond to the date when the partition was used.}
 
 \item{m}{The minimum group size, i.e. all groups have size at least m}
 }
@@ -17,7 +17,7 @@ write_mdgp_specfile(current_frame, past_sessions, m)
 File name of the generated specification file
 }
 \description{
-Generate a \code{tempfile()} containing the appropriate specification formed from \code{current_frame} and \code{past_sessions}.
+Generate a \code{tempfile()} containing the appropriate specification formed from \code{current_frame} and \code{past_partitions}.
 }
 \details{
 The specification format has the following header line
@@ -27,7 +27,7 @@ upper boundary for each group size. The keyword `ds` for the solver in the above
 }
 \examples{
 frame  <- tibble::tibble(id=sprintf("id\%.2d", 1:5), date=as.Date("2021-04-28"))
-past_sessions <- list("2021-04-21"=list(c("id02", "id03", "id04"), c("id01", "id05")))
-spec_file <- socialroulette:::write_mdgp_specfile(frame, past_sessions=past_sessions, m=2)
+past_partitions <- list("2021-04-21"=list(c("id02", "id03", "id04"), c("id01", "id05")))
+spec_file <- socialroulette:::write_mdgp_specfile(frame, past_partitions=past_partitions, m=2)
 cat(stringr::str_c(readLines(spec_file), collapse="\n"))
 }

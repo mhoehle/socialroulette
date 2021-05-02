@@ -4,7 +4,7 @@
     <loc>https://hoehleatsu.github.io/socialroulette//index.html</loc>
   </url>
   <url>
-    <loc>https://hoehleatsu.github.io/socialroulette//reference/frame_to_partitionList.html</loc>
+    <loc>https://hoehleatsu.github.io/socialroulette//reference/frame_to_partition.html</loc>
   </url>
   <url>
     <loc>https://hoehleatsu.github.io/socialroulette//reference/group_to_pairs.html</loc>
@@ -13,19 +13,25 @@
     <loc>https://hoehleatsu.github.io/socialroulette//reference/make_partition_srs.html</loc>
   </url>
   <url>
+    <loc>https://hoehleatsu.github.io/socialroulette//reference/mdgp_partition_to_frame.html</loc>
+  </url>
+  <url>
     <loc>https://hoehleatsu.github.io/socialroulette//reference/mdgp_solver.html</loc>
   </url>
   <url>
     <loc>https://hoehleatsu.github.io/socialroulette//reference/pairs_to_partition.html</loc>
   </url>
   <url>
-    <loc>https://hoehleatsu.github.io/socialroulette//reference/pairs_to_session.html</loc>
-  </url>
-  <url>
-    <loc>https://hoehleatsu.github.io/socialroulette//reference/partitionList_to_frame.html</loc>
+    <loc>https://hoehleatsu.github.io/socialroulette//reference/pairs_to_partitions.html</loc>
   </url>
   <url>
     <loc>https://hoehleatsu.github.io/socialroulette//reference/partition_to_frame.html</loc>
+  </url>
+  <url>
+    <loc>https://hoehleatsu.github.io/socialroulette//reference/partitions_to_distance.html</loc>
+  </url>
+  <url>
+    <loc>https://hoehleatsu.github.io/socialroulette//reference/partitions_to_pairs.html</loc>
   </url>
   <url>
     <loc>https://hoehleatsu.github.io/socialroulette//reference/pipe.html</loc>
@@ -35,12 +41,6 @@
   </url>
   <url>
     <loc>https://hoehleatsu.github.io/socialroulette//reference/rsocialroulette.html</loc>
-  </url>
-  <url>
-    <loc>https://hoehleatsu.github.io/socialroulette//reference/sessions_to_distance.html</loc>
-  </url>
-  <url>
-    <loc>https://hoehleatsu.github.io/socialroulette//reference/sessions_to_pairs.html</loc>
   </url>
   <url>
     <loc>https://hoehleatsu.github.io/socialroulette//reference/socialroulette-package.html</loc>

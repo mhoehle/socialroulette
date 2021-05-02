@@ -10,7 +10,7 @@ pairs_to_partition(pairs_df)
 \item{pairs_df}{data.frame containing the pairs, i.e. it has columns date, id1 and id2}
 }
 \value{
-A partitionList
+A named list of partitions
 }
 \description{
 Function to convert a data.frame of pairs to a partition

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Make a new lunch roulette session maximizing the gossip to exchange — rsocialroulette • socialroulette</title>
+<title>Make a new lunch roulette partition maximizing the gossip to exchange — rsocialroulette • socialroulette</title>
 
 
 <!-- jquery -->
@@ -39,7 +39,7 @@
 
 
 
-<meta property="og:title" content="Make a new lunch roulette session maximizing the gossip to exchange — rsocialroulette" />
+<meta property="og:title" content="Make a new lunch roulette partition maximizing the gossip to exchange — rsocialroulette" />
 <meta property="og:description" content="One can either use simple random sampling (srs) to generate the partition or
 solve the maximally diverse grouping problem (mdgp) using the algorithm by
 Lai and Hao (2016) in order to maximize time since last meets over all groups." />
@@ -117,7 +117,7 @@ Lai and Hao (2016) in order to maximize time since last meets over all groups." 
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Make a new lunch roulette session maximizing the gossip to exchange</h1>
+    <h1>Make a new lunch roulette partition maximizing the gossip to exchange</h1>
     
     <div class="hidden name"><code>rsocialroulette.Rd</code></div>
     </div>
@@ -130,7 +130,7 @@ Lai and Hao (2016) in order to maximize time since last meets over all groups.</
 
     <pre class="usage"><span class='fu'>rsocialroulette</span><span class='op'>(</span>
   <span class='va'>current_frame</span>,
-  past_sessions <span class='op'>=</span> <span class='cn'>NULL</span>,
+  past_partitions <span class='op'>=</span> <span class='cn'>NULL</span>,
   <span class='va'>m</span>,
   algorithm <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"mdgp"</span>, <span class='st'>"srs"</span><span class='op'>)</span>
 <span class='op'>)</span></pre>
@@ -140,11 +140,7 @@ Lai and Hao (2016) in order to maximize time since last meets over all groups.</
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>current_frame</th>
-      <td><p>A tibble containing the participants of the current round, i.e. it has a column `id` containing a unique identifier and a `date` column representing the date of the session.</p></td>
-    </tr>
-    <tr>
-      <th>past_sessions</th>
-      <td><p>A list of partitionLists, i.e. each partition is a list of vectors containing the id of the members of the corresponding group. The default <code>NULL</code> means that no previous sessions are taken into account.</p></td>
+      <td><p>A tibble containing the participants of the current round, i.e. it has a column `id` containing a unique identifier and a `date` column representing the date of the partition.</p></td>
     </tr>
     <tr>
       <th>m</th>
@@ -154,7 +150,7 @@ Lai and Hao (2016) in order to maximize time since last meets over all groups.</
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A partitionList containing the partitioning of current_frame maximizing the overall sum of gossip to be exchanged.</p>
+    <p>A partitioning of current_frame maximizing the overall sum of gossip to be exchanged.</p>
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
     <p>Höhle M (2021), Long time, no see: Virtual Lunch Roulette, Blog post, <a href='https://staff.math.su.se/hoehle/blog/2021/04/04/socialsamp.html'>https://staff.math.su.se/hoehle/blog/2021/04/04/socialsamp.html</a></p>
@@ -165,6 +161,54 @@ https://doi.org/10.1016/j.ejor.2016.05.018</p>
 
     <div class='dont-index'><p>mdgp_solver</p></div>
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='va'>today</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/Sys.time.html'>Sys.Date</a></span><span class='op'>(</span><span class='op'>)</span>
+<span class='va'>frame</span> <span class='op'>&lt;-</span> <span class='fu'>tibble</span><span class='fu'>::</span><span class='fu'><a href='https://tibble.tidyverse.org/reference/tibble.html'>tibble</a></span><span class='op'>(</span> id<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/sprintf.html'>sprintf</a></span><span class='op'>(</span><span class='st'>"id%.02d"</span>,<span class='fl'>1</span><span class='op'>:</span><span class='fl'>5</span><span class='op'>)</span>, date<span class='op'>=</span><span class='va'>today</span><span class='op'>)</span>
+<span class='va'>round1</span> <span class='op'>&lt;-</span> <span class='fu'>rsocialroulette</span><span class='op'>(</span>current_frame <span class='op'>=</span> <span class='va'>frame</span>, m<span class='op'>=</span><span class='fl'>2</span>, algorithm<span class='op'>=</span><span class='st'>"srs"</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; Partitioning 5 individuals into groups of at least 2 (no past partitions).
+#&gt; Created 2 groups of sizes 3 2.</div><div class='input'><span class='va'>round1</span>
+</div><div class='output co'>#&gt; [[1]]
+#&gt; [1] "id02" "id04" "id05"
+#&gt; 
+#&gt; [[2]]
+#&gt; [1] "id01" "id03"
+#&gt; </div><div class='input'>
+<span class='co'>#Generate list of past partitions</span>
+<span class='va'>past_partitions</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='va'>round1</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/stats/setNames.html'>setNames</a></span><span class='op'>(</span><span class='va'>today</span><span class='op'>)</span>
+<span class='va'>frame2</span> <span class='op'>&lt;-</span> <span class='va'>frame</span> <span class='op'>%&gt;%</span> <span class='fu'>dplyr</span><span class='fu'>::</span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>date <span class='op'>=</span> <span class='va'>today</span><span class='op'>+</span><span class='fl'>7</span><span class='op'>)</span>
+<span class='va'>round2</span> <span class='op'>&lt;-</span> <span class='fu'>rsocialroulette</span><span class='op'>(</span>current_frame <span class='op'>=</span> <span class='va'>frame2</span>, past_partitions<span class='op'>=</span><span class='va'>past_partitions</span>, m<span class='op'>=</span><span class='fl'>2</span>, algorithm<span class='op'>=</span><span class='st'>"mdgp"</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; Partitioning 5 individuals into groups of at least 2 (Optimizing wrt. past partitions).
+#&gt; Input file: /var/folders/3g/8qpqpqtx2cz_r4fzd8bjvcyw0000gq/T//RtmpWYDSvF/file4a81599f2ae9.txt
+#&gt; Output file: /var/folders/3g/8qpqpqtx2cz_r4fzd8bjvcyw0000gq/T//RtmpWYDSvF/file4a8160ba54f6
+#&gt; Solution file: /var/folders/3g/8qpqpqtx2cz_r4fzd8bjvcyw0000gq/T//RtmpWYDSvF/file4a8169201416
+#&gt; Time_limit: 30.000000
+#&gt; Inputting...
+#&gt; Read file...
+#&gt; Assigning memory...
+#&gt; Building neighbours...
+#&gt; Running...
+#&gt; 49.000000 
+#&gt; 49.000000 
+#&gt; 49.000000 
+#&gt; 49.000000 
+#&gt; 49.000000 
+#&gt; 49.000000 
+#&gt; 49.000000 
+#&gt; 49.000000 
+#&gt; 49.000000 
+#&gt; 49.000000 
+#&gt; </div><div class='output co'>#&gt; <span class='message'></span>
+#&gt; <span class='message'><span style='color: #00BBBB;'>──</span><span> </span><span style='font-weight: bold;'>Column specification</span><span> </span><span style='color: #00BBBB;'>────────────────────────────────────────────────────────</span><span></span>
+#&gt; <span class='message'>cols(</span>
+#&gt; <span class='message'>  id_int = </span><span style='color: #BB0000;'>col_character()</span><span>,</span>
+#&gt; <span class='message'>  group = </span><span style='color: #BB0000;'>col_character()</span><span></span>
+#&gt; <span class='message'>)</span></div><div class='output co'>#&gt; Created 2 groups of sizes 3 2.</div><div class='input'><span class='va'>round2</span>
+</div><div class='output co'>#&gt; [[1]]
+#&gt; [1] "id02" "id03" "id04"
+#&gt; 
+#&gt; [[2]]
+#&gt; [1] "id01" "id05"
+#&gt; </div></span></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
