@@ -143,10 +143,10 @@
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">round2</span>
 <span class="co">#&gt; [[1]]</span>
-<span class="co">#&gt; [1] "id01" "id02" "id05"</span>
+<span class="co">#&gt; [1] "id01" "id02" "id03"</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; [[2]]</span>
-<span class="co">#&gt; [1] "id03" "id04"</span></code></pre></div>
+<span class="co">#&gt; [1] "id04" "id05"</span></code></pre></div>
 <p>Using this partitions we get the following re-unions, i.e. pairs of individuals which in round 2 meet again, despite already being in the same group in round 1. Note that it is easy to show that with 5 participants and <span class="math inline">\(m=2\)</span>, at least one re-union is needed.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">partitions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>last_week <span class="op">=</span> <span class="va">round1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>this_week <span class="op">=</span> <span class="va">round2</span><span class="op">)</span><span class="op">)</span>
@@ -155,7 +155,7 @@
 <span class="co">#&gt; # A tibble: 1 x 4</span>
 <span class="co">#&gt;   date.x    id1   id2   date.y   </span>
 <span class="co">#&gt;   &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;    </span>
-<span class="co">#&gt; 1 last_week id01  id05  this_week</span></code></pre></div>
+<span class="co">#&gt; 1 last_week id01  id03  this_week</span></code></pre></div>
 </div>
 </div>
 <div id="assigning-students-into-breakout-rooms" class="section level2">
