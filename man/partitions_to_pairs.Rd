@@ -15,5 +15,5 @@ The name of the list contain the date at which each partition was used.
 \examples{
 partitions <- list("2021-04-21"=list(c("id02", "id03", "id04"), c("id05", "id01")),
                   "2021-04-28"=list(c("id05", "id03", "id04"), c("id02", "id01")))
-socialroulette:::partitions_to_pairs(partitions)
+socialroulette::partitions_to_pairs(partitions)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/socialroulette.R
 \name{partitions_to_distance}
 \alias{partitions_to_distance}
-\title{Convert a list of partitions into a MDGP distance metric}
+\title{Convert a list of partitions into pairs format including a distance metric}
 \usage{
 partitions_to_distance(current_frame, past_partitions)
 }
@@ -12,11 +12,11 @@ partitions_to_distance(current_frame, past_partitions)
 \item{past_partitions}{List of previous partitions}
 }
 \description{
-Convert a list of partitions into a MDGP distance metric
+Convert a list of partitions into pairs format including a distance metric
 }
 \examples{
 frame  <- tibble::tibble(id=sprintf("id\%.2d", 1:5), date=as.Date("2021-04-28"))
 partitions <- list("2021-04-14"=list(c("id02", "id03", "id04"), c("id01", "id05")),
                   "2021-04-21"=list(c("id03", "id04", "id05"), c("id01", "id02")))
-socialroulette:::partitions_to_distance(frame, partitions)
+socialroulette::partitions_to_distance(frame, partitions)
 }

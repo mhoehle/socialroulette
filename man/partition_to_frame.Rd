@@ -17,5 +17,5 @@ The resulting \code{tibble} will have an additional column \code{group}
 }
 \examples{
 round1 <- list(c("id02", "id03", "id04"), c("id05", "id01"))
-socialroulette:::partition_to_frame(round1)
+socialroulette::partition_to_frame(round1)
 }

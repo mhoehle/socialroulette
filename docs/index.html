@@ -81,7 +81,7 @@ devtools::install_github("hoehleatsu/socialroulette")
 # Distribute 5 ppl into groups of at least 2
 frame &lt;- tibble(id=sprintf("id%.3d@math.su.se", 1:5), date=Sys.Date())
 rsocialroulette(frame, past_sessions=NULL, m=2, algorithm="srs")</a></code></pre>
-<p>For more information see the <code>get-started</code> vignette.</p>
+<p>More complex partition algorithms, e.g., maximizing the distance in time since the people in the groups met the last time, are also available from the package. For more information see the <a href="https://hoehleatsu.github.io/socialroulette/articles/get-started.html">Getting started</a> vignette of the package.</p>
 </div>
   </div>
 

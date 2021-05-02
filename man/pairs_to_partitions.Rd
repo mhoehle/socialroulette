@@ -16,8 +16,8 @@ function pairs_to_partition to the resulting sub data.frame.
 \examples{
 partitions <- list("2021-04-21"=list(c("id02", "id03", "id04"), c("id01", "id05")),
                   "2021-04-28"=list(c("id03", "id04", "id05"), c("id01", "id02")))
-partitions2 <- partitions \%>\% socialroulette:::partitions_to_pairs() \%>\%
-                          socialroulette:::pairs_to_partitions()
+partitions2 <- partitions \%>\% socialroulette::partitions_to_pairs() \%>\%
+                          socialroulette::pairs_to_partitions()
 all.equal(partitions, partitions2)
 }
 \seealso{

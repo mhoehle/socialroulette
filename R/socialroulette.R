@@ -74,9 +74,9 @@ mdgp_solver <- function(mdgp_format_file, time_limit= 30) {
 #' @examples
 #' frame  <- tibble::tibble(id=sprintf("id%.2d", 1:5), date=as.Date("2021-04-28"))
 #' past_partitions <- list("2021-04-21"=list(c("id02", "id03", "id04"), c("id01", "id05")))
-#' spec_file <- socialroulette:::write_mdgp_specfile(frame, past_partitions=past_partitions, m=2)
+#' spec_file <- socialroulette:::mdgp_write_specfile(frame, past_partitions=past_partitions, m=2)
 #' cat(stringr::str_c(readLines(spec_file), collapse="\n"))
-write_mdgp_specfile <- function(current_frame, past_partitions, m) {
+mdgp_write_specfile <- function(current_frame, past_partitions, m) {
   # Check that the current_frame has an id column
   stopifnot( "id" %in% colnames(current_frame))
 
@@ -122,7 +122,7 @@ write_mdgp_specfile <- function(current_frame, past_partitions, m) {
 #' Read output from the Lai and Hao (2016) MDGP solver
 #' @param file_name Name of the solution file
 #' @return data.frame with two clumns, idx (index) and group
-read_mdgp_solutionfile <- function(file_name) {
+mdgp_read_solutionfile <- function(file_name) {
   #Sanity check
   stopifnot(file.exists(file_name))
 
@@ -180,10 +180,11 @@ group_to_pairs <- function(group) {
 #'
 #' The name of the list contain the date at which each partition was used.
 #' @param partitions A list of past partitions, i.e. a named list where each entry is a partition and the names reflect the dates the partition were used
+#' @export
 #' @examples
 #' partitions <- list("2021-04-21"=list(c("id02", "id03", "id04"), c("id05", "id01")),
 #'                   "2021-04-28"=list(c("id05", "id03", "id04"), c("id02", "id01")))
-#' socialroulette:::partitions_to_pairs(partitions)
+#' socialroulette::partitions_to_pairs(partitions)
 
 partitions_to_pairs <- function(partitions) {
   purrr::map_dfr(partitions,  ~ purrr::map_df(.x, ~ group_to_pairs(.x)), .id="date")
@@ -193,6 +194,7 @@ partitions_to_pairs <- function(partitions) {
 #'
 #' @param pairs_df data.frame containing the pairs, i.e. it has columns date, id1 and id2
 #' @return A named list of partitions
+#' @export
 #' @keywords internal
 pairs_to_partition <- function(pairs_df) {
   res <- list()
@@ -223,11 +225,12 @@ pairs_to_partition <- function(pairs_df) {
 #'
 #' @param pairs A \code{data.frame} with columns \code{date} and \code{id1} and \code{id2}.
 #' @seealso pairs_to_partition
+#' @export
 #' @examples
 #' partitions <- list("2021-04-21"=list(c("id02", "id03", "id04"), c("id01", "id05")),
 #'                   "2021-04-28"=list(c("id03", "id04", "id05"), c("id01", "id02")))
-#' partitions2 <- partitions %>% socialroulette:::partitions_to_pairs() %>%
-#'                           socialroulette:::pairs_to_partitions()
+#' partitions2 <- partitions %>% socialroulette::partitions_to_pairs() %>%
+#'                           socialroulette::pairs_to_partitions()
 #' all.equal(partitions, partitions2)
 pairs_to_partitions <- function(pairs) {
 
@@ -239,16 +242,16 @@ pairs_to_partitions <- function(pairs) {
 }
 
 
-#' Convert a list of partitions into a MDGP distance metric
+#' Convert a list of partitions into pairs format including a distance metric
 #'
 #' @param past_partitions List of previous partitions
 #' @param current_frame The current frame
-#'
+#' @export
 #' @examples
 #' frame  <- tibble::tibble(id=sprintf("id%.2d", 1:5), date=as.Date("2021-04-28"))
 #' partitions <- list("2021-04-14"=list(c("id02", "id03", "id04"), c("id01", "id05")),
 #'                   "2021-04-21"=list(c("id03", "id04", "id05"), c("id01", "id02")))
-#' socialroulette:::partitions_to_distance(frame, partitions)
+#' socialroulette::partitions_to_distance(frame, partitions)
 
 partitions_to_distance <- function(current_frame, past_partitions) {
   #Make all potential pairs in current_frame
@@ -295,7 +298,7 @@ partitions_to_distance <- function(current_frame, past_partitions) {
 #' @keywords internal
 #' @examples
 #' p <- tibble::tibble(id=sprintf("id%.02d",1:5), group=c(1,1,1,2,2))
-#' socialroulette:::frame_to_partition(p)
+#' socialroulette::frame_to_partition(p)
 frame_to_partition <- function(frame) {
   n_g <- length(unique(frame$group))
   purrr::map(seq_len(n_g), ~ frame %>% filter(group == .x) %>% dplyr::pull(id) %>% sort())
@@ -307,9 +310,10 @@ frame_to_partition <- function(frame) {
 #'
 #' @param A partition, i.e. list of vectors, where each vector contains all individuals in the corresponding group
 #' @return frame The frame with `id` and `group` columns to convert
+#' @export
 #' @examples
 #' round1 <- list(c("id02", "id03", "id04"), c("id05", "id01"))
-#' socialroulette:::partition_to_frame(round1)
+#' socialroulette::partition_to_frame(round1)
 partition_to_frame <- function(l) {
   purrr::map_df( seq_len(length(l)), ~ tibble::tibble(id=l[[.x]], group=.x))
 }
@@ -373,10 +377,10 @@ rsocialroulette <- function(current_frame, past_partitions=NULL, m, algorithm=c(
   #Read output and convert it to a partition
   if (algorithm == "mdgp") {
     #Make a specification file and solve it
-    spec_file <- write_mdgp_specfile(current_frame, past_partitions, m=m)
+    spec_file <- mdgp_write_specfile(current_frame, past_partitions, m=m)
     res <- mdgp_solver(spec_file)
     #Read output as a partition
-    partition <- read_mdgp_solutionfile(res$solution_file) %>%
+    partition <- mdgp_read_solutionfile(res$solution_file) %>%
       mdgp_partition_to_frame(frame=current_frame) %>%
       frame_to_partition()
   } else {

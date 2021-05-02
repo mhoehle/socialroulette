@@ -16,7 +16,13 @@
     <loc>https://hoehleatsu.github.io/socialroulette//reference/mdgp_partition_to_frame.html</loc>
   </url>
   <url>
+    <loc>https://hoehleatsu.github.io/socialroulette//reference/mdgp_read_solutionfile.html</loc>
+  </url>
+  <url>
     <loc>https://hoehleatsu.github.io/socialroulette//reference/mdgp_solver.html</loc>
+  </url>
+  <url>
+    <loc>https://hoehleatsu.github.io/socialroulette//reference/mdgp_write_specfile.html</loc>
   </url>
   <url>
     <loc>https://hoehleatsu.github.io/socialroulette//reference/pairs_to_partition.html</loc>
@@ -37,16 +43,10 @@
     <loc>https://hoehleatsu.github.io/socialroulette//reference/pipe.html</loc>
   </url>
   <url>
-    <loc>https://hoehleatsu.github.io/socialroulette//reference/read_mdgp_solutionfile.html</loc>
-  </url>
-  <url>
     <loc>https://hoehleatsu.github.io/socialroulette//reference/rsocialroulette.html</loc>
   </url>
   <url>
     <loc>https://hoehleatsu.github.io/socialroulette//reference/socialroulette-package.html</loc>
-  </url>
-  <url>
-    <loc>https://hoehleatsu.github.io/socialroulette//reference/write_mdgp_specfile.html</loc>
   </url>
   <url>
     <loc>https://hoehleatsu.github.io/socialroulette//articles/get-started.html</loc>

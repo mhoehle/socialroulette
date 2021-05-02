@@ -17,6 +17,6 @@ This is a small useful converter function for taking a tibble including a `group
 }
 \examples{
 p <- tibble::tibble(id=sprintf("id\%.02d",1:5), group=c(1,1,1,2,2))
-socialroulette:::frame_to_partition(p)
+socialroulette::frame_to_partition(p)
 }
 \keyword{internal}
