@@ -8,13 +8,16 @@ rsocialroulette(
   current_frame,
   past_partitions = NULL,
   m,
-  algorithm = c("mdgp", "srs")
+  algorithm = c("mdgp", "srs"),
+  ...
 )
 }
 \arguments{
 \item{current_frame}{A tibble containing the participants of the current round, i.e. it has a column `id` containing a unique identifier and a `date` column representing the date of the partition.}
 
 \item{m}{minimum group size, i.e. all groups will be at least size m.}
+
+\item{\dots}{Additional arguments to be sent to the solver}
 }
 \value{
 A partitioning of current_frame maximizing the overall sum of gossip to be exchanged.

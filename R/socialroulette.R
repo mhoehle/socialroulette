@@ -29,7 +29,7 @@
 #' for this several temporary files are generated using `tempfile()`.
 #'
 #' @param mdg_format_file Path to the file containing the MDGP specification in mdgplib format
-#' @param time_limit Number of seconds to iteratively optimize each run
+#' @param time_limit Number of seconds to iteratively optimize each run. The larger the number of participants to group, the larger this value should be. Rule of thumb: time_limit = exp(0.5 + 0.0025*n)
 #' @return File name of the solution file
 #'
 #' @references Xiangjing Lai and Jin-Kao Hao (2016). *Iterated maxima search for the maximally
@@ -133,8 +133,8 @@ mdgp_read_solutionfile <- function(file_name) {
   # Extract number of individuals n
   n <- stringr::str_replace(line1, "^(N = )([0-9]+).*", "\\2") %>% as.numeric()
 
-  #Read the groups
-  groups <- readr::read_delim(file=file_name, skip=1 + n_g, delim=" ", col_names=c("id_int", "group")) %>%
+  #Read the groups (col_types argument used to avoid output - see ?readr::read_delim)
+  groups <- readr::read_delim(file=file_name, skip=1 + n_g, delim=" ", col_names=c("id_int", "group"), col_types = cols()) %>%
     dplyr::mutate(idx = as.numeric(id_int)+1,
            group = as.numeric(group) + 1) %>%
     dplyr::select(idx, group)
@@ -343,6 +343,7 @@ mdgp_partition_to_frame <- function(mdgp_partition, frame ) {
 #'
 #' @param current_frame A tibble containing the participants of the current round, i.e. it has a column `id` containing a unique identifier and a `date` column representing the date of the partition.
 #' @param m minimum group size, i.e. all groups will be at least size m.
+#' @param \dots Additional arguments to be sent to the solver
 #' @return A partitioning of current_frame maximizing the overall sum of gossip to be exchanged.
 #'
 #' @seealso mdgp_solver
@@ -362,7 +363,7 @@ mdgp_partition_to_frame <- function(mdgp_partition, frame ) {
 #' round2 <- rsocialroulette(current_frame = frame2, past_partitions=past_partitions, m=2, algorithm="mdgp")
 #' round2
 #' @export
-rsocialroulette <- function(current_frame, past_partitions=NULL, m, algorithm=c("mdgp", "srs")) {
+rsocialroulette <- function(current_frame, past_partitions=NULL, m, algorithm=c("mdgp", "srs"), ...) {
   # Sanity checks
   stopifnot( "id" %in% colnames(current_frame))
   stopifnot( "date" %in% colnames(current_frame))
@@ -378,7 +379,7 @@ rsocialroulette <- function(current_frame, past_partitions=NULL, m, algorithm=c(
   if (algorithm == "mdgp") {
     #Make a specification file and solve it
     spec_file <- mdgp_write_specfile(current_frame, past_partitions, m=m)
-    res <- mdgp_solver(spec_file)
+    res <- mdgp_solver(spec_file, ...)
     #Read output as a partition
     partition <- mdgp_read_solutionfile(res$solution_file) %>%
       mdgp_partition_to_frame(frame=current_frame) %>%

@@ -7,7 +7,7 @@
 mdgp_solver(mdgp_format_file, time_limit = 30)
 }
 \arguments{
-\item{time_limit}{Number of seconds to iteratively optimize each run}
+\item{time_limit}{Number of seconds to iteratively optimize each run. The larger the number of participants to group, the larger this value should be. Rule of thumb: time_limit = exp(0.5 + 0.0025*n)}
 
 \item{mdg_format_file}{Path to the file containing the MDGP specification in mdgplib format}
 }

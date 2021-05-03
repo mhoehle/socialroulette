@@ -59,13 +59,14 @@ past_partitions <- list(round1) %>% setNames(today)
 #Same individuals one week later
 frame2 <- frame %>% mutate(date = today+7)
 #Check for each possible pair in frame2 how long ago (in days) it would be that they met. 
-socialroulette::partitions_to_distance(frame2, past_partitions)
+pairs_dist <- socialroulette::partitions_to_distance(frame2, past_partitions)
+pairs_dist
 ```
 
 For comparison, we now use maximally diverse grouping problem solver on the same toy example. This corresponds to taking a sledgehammer to crush a nut, but helps to show how the package works:
 
 ```{r, cache=TRUE, results="hide", message=FALSE}
-round2 <- socialroulette::rsocialroulette(current_frame = frame2, past_partitions=past_partitions, m=2, algorithm="mdgp")
+round2 <- socialroulette::rsocialroulette(current_frame = frame2, past_partitions=past_partitions, m=2, algorithm="mdgp", time_limit=1)
 ```
 ```{r}
 round2
@@ -78,6 +79,13 @@ partitions <- list(list(last_week = round1), list(this_week = round2))
 pairs <- map(partitions, ~ socialroulette::partitions_to_pairs(.x))
 inner_join(pairs[[1]], pairs[[2]], by=c("id1", "id2"))
 ```
+The total maximized distance (49) found for the selected partition can be confirmed as follows:
+```{r}
+list(round2) %>% socialroulette::partitions_to_pairs() %>% 
+  left_join(pairs_dist, by=c("id1","id2")) %>% 
+  summarise(total_dist = sum(dist))
+```
+
 
 ## Assigning Students into Breakout Rooms
 
