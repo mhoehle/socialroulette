@@ -79,12 +79,12 @@
 devtools::install_github("hoehleatsu/socialroulette")
 
 # Distribute 5 ppl into 2 group of at least 2 using simple random sampling
-frame &lt;- tibble(id=sprintf("id%.3d@math.su.se", 1:5), date=Sys.Date())
+frame &lt;- tibble(id=sprintf("id%.3d", 1:5), date=Sys.Date())
 rsocialroulette(frame, past_partitions=NULL, m=2, algorithm="srs")
 
 # Distribute 5 ppl into 2 groups, but s.t. as few reunions as possible from
 # groups of last round happen. This is handled as a MDGP instance.
-last_round &lt;- setNames(list(list(c("id01", "id03", "id05"), c("id02", "id04"))), Sys.Date() - 7)
+last_round &lt;- setNames(list(list(c("id001", "id003", "id005"), c("id002", "id04"))), Sys.Date() - 7)
 rsocialroulette(frame, past_partitions=last_round, m=2, algorithm="mdgp", time_limit=1)</a></code></pre>
 <p>More complex partition algorithms, e.g., maximizing the distance in time since the people in the groups met the last time, are also available from the package. For more information see the <a href="https://hoehleatsu.github.io/socialroulette/articles/get-started.html">Getting started</a> vignette of the package.</p>
 </div>
