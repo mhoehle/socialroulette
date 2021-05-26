@@ -9,12 +9,11 @@ See the [package website](https://hoehleatsu.github.io/socialroulette/)  for mor
 # Install package
 devtools::install_github("hoehleatsu/socialroulette")
 
-# Distribute 5 ppl into 2 group of at least 2 using simple random sampling
+# Distribute 5 ppl into groups of size at least 2 using simple random sampling
 frame <- tibble(id=sprintf("id%.3d", 1:5), date=Sys.Date())
 rsocialroulette(frame, past_partitions=NULL, m=2, algorithm="srs")
 
-# Distribute 5 ppl into 2 groups, but s.t. as few reunions as possible from
-# groups of last round happen. This is handled as a MDGP instance.
+# Distribute 5 ppl into groups with m=2, but s.t. as few reunions as possible occur 
 last_round <- setNames(list(list(c("id001", "id003", "id005"), c("id002", "id04"))), Sys.Date() - 7)
 rsocialroulette(frame, past_partitions=last_round, m=2, algorithm="mdgp", time_limit=1)
 ```

@@ -22,10 +22,13 @@ Imports:
     dplyr,
     purrr,
     readr,
+    stringr,
+    tidyr,
     tibble
 RoxygenNote: 7.1.1
 Suggests: 
     rmarkdown,
     knitr,
-    igraph
+    igraph,
+    ggplot2
 VignetteBuilder: knitr

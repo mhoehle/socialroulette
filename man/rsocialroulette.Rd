@@ -15,7 +15,11 @@ rsocialroulette(
 \arguments{
 \item{current_frame}{A tibble containing the participants of the current round, i.e. it has a column `id` containing a unique identifier and a `date` column representing the date of the partition.}
 
+\item{past_partitions}{A list of partition lists each named by the date the partition was used (this is used to determine temporal distance to last meeting)}
+
 \item{m}{minimum group size, i.e. all groups will be at least size m.}
+
+\item{algorithm}{String specifying either "srs" (simple random sampling - DEFAULT) or "mdgp" (maximally diverse grouping problem)}
 
 \item{\dots}{Additional arguments to be sent to the solver}
 }
@@ -36,7 +40,8 @@ round1
 #Generate list of past partitions
 past_partitions <- list(round1) \%>\% setNames(today)
 frame2 <- frame \%>\% dplyr::mutate(date = today+7)
-round2 <- rsocialroulette(current_frame = frame2, past_partitions=past_partitions, m=2, algorithm="mdgp")
+round2 <- rsocialroulette(current_frame = frame2,
+                          past_partitions=past_partitions, m=2, algorithm="mdgp")
 round2
 }
 \references{

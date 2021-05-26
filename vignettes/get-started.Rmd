@@ -15,13 +15,13 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
-```{r, echo=FALSE}
+```{r, echo=FALSE, results="hide"}
 set.seed(123)
 ```
 
 ## Introduction
 
-The `socialroulette` R package is a lightweight package for handling the recurrent problem of assigning individuals into groups of a fixed size. This happens, e.g., as part of [mystery lunch](https://hbr.org/2013/01/a-new-way-to-network-inside-yo) scheduling or when assigning students into breakout rooms in video lectures. The work on the package was inspired by the blog post [Long time, no see: Virtual Lunch Roulette](https://staff.math.su.se/hoehle/blog/2021/04/04/socialsamp.html),
+The `socialroulette` R package is a lightweight package for handling the recurrent problem of assigning individuals into groups of a fixed size. This happens, e.g., as part of [mystery lunch](https://hbr.org/2013/01/a-new-way-to-network-inside-yo) scheduling or when assigning students into breakout rooms in video lectures. The work on the package was inspired by the blog post [Long time, no see: Virtual Lunch Roulette](https://staff.math.su.se/hoehle/blog/2021/04/04/socialsamp.html).
 
 ## The Problem
 
@@ -59,8 +59,7 @@ past_partitions <- list(round1) %>% setNames(today)
 #Same individuals one week later
 frame2 <- frame %>% mutate(date = today+7)
 #Check for each possible pair in frame2 how long ago (in days) it would be that they met. 
-pairs_dist <- socialroulette::partitions_to_distance(frame2, past_partitions)
-pairs_dist
+(pairs_dist <- socialroulette::partitions_to_distance(frame2, past_partitions))
 ```
 
 For comparison, we now use maximally diverse grouping problem solver on the same toy example. This corresponds to taking a sledgehammer to crush a nut, but helps to show how the package works:
@@ -149,13 +148,13 @@ current_frame <-  students %>% slice_sample(n = rbinom(1,nrow(.), prob=0.7)) %>%
   mutate(date=max(partition_dates) + diff(partition_dates) %>% mean())
 ```
 
-Our goal is now to partition the students `r nrow(current_frame)` in `current_frame`. For each of the `r choose(nrow(current_frame), 2)` possbile pairs of students in that class, we determine how long ago it has been, since they were in the same group the last time. This can be done using the internal package function `partitions_to_distance`:
+Our goal is now to partition the students `r nrow(current_frame)` in `current_frame`. For each of the `r choose(nrow(current_frame), 2)` possible pairs of students in that class, we determine how long ago it has been, since they were in the same group the last time. This can be done using the internal package function `partitions_to_distance`:
 ```{r}
 dist <- socialroulette::partitions_to_distance(current_frame, past_partitions)
 dist %>% head()
 ```
 ```{r, echo=FALSE, fig.width=8, fig.height=4}
-ggplot2::ggplot(dist, aes(x=dist)) + geom_histogram(breaks=seq(0,35,by=1)) + 
+ggplot(dist, aes(x=dist)) + geom_histogram(breaks=seq(0,35,by=1)) + 
   ylab("Number of pairs") + xlab("Days since last meet")
 ```
 
@@ -185,7 +184,7 @@ igraph_options(vertex.label.family="sans",
 
 # Convert to frame specification with group column
 edges_df <- socialroulette::partition_to_frame(partition) %>% 
-  mutate(id = str_replace(id, "@student.su.se", ""))
+  mutate(id = stringr::str_replace(id, "@student.su.se", ""))
 
 #Get group of each
 vertex_groups <- edges_df %>%

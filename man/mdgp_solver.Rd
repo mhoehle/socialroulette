@@ -7,9 +7,9 @@
 mdgp_solver(mdgp_format_file, time_limit = 30)
 }
 \arguments{
-\item{time_limit}{Number of seconds to iteratively optimize each run. The larger the number of participants to group, the larger this value should be. Rule of thumb: time_limit = exp(0.5 + 0.0025*n)}
+\item{mdgp_format_file}{Path to the file containing the MDGP specification in mdgplib format}
 
-\item{mdg_format_file}{Path to the file containing the MDGP specification in mdgplib format}
+\item{time_limit}{Number of seconds to iteratively optimize each run. The larger the number of participants to group, the larger this value should be. Rule of thumb: time_limit = exp(0.5 + 0.0025*n)}
 }
 \value{
 File name of the solution file
@@ -28,7 +28,7 @@ and summing this quantity over all groups. More formally, let \eqn{d_{ij}} denot
 time unit (typically days) ago, that individual \eqn{i} and \eqn{j} were in the same group.
 Note: This distance is derived by looking at the previous partitions and it is a matter
 of definition what this value should be, if \eqn{i} and \eqn{j} have not previously been
-in the same group. Let \eqn{n_g=n\> \text{div}\> m} denote the resulting number of groups where \eqn{\text{div}} denotes integer division.
+in the same group. Let \eqn{G=n\> \text{div}\> m} denote the resulting number of groups where \eqn{\text{div}} denotes integer division.
 For a given partition let \eqn{x_{ig}} be an indicator variable, which is 1, if \eqn{i} is assigned into
 group \eqn{g} and zero otherwise.
 A solver of the maximally diverse grouping problem now tries to maximize

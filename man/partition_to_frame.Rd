@@ -7,7 +7,7 @@
 partition_to_frame(l)
 }
 \arguments{
-\item{A}{partition, i.e. list of vectors, where each vector contains all individuals in the corresponding group}
+\item{l}{A partition, i.e. list of vectors, where each vector contains all individuals in the corresponding group}
 }
 \value{
 frame The frame with `id` and `group` columns to convert

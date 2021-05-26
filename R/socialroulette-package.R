@@ -17,6 +17,8 @@
 #' @importFrom stats setNames
 #' @importFrom tibble tibble
 #' @importFrom readr read_delim write_delim
+#' @importFrom tidyr expand_grid
+#' @importFrom stringr str_c str_replace
 #' @import dplyr
 #' @import purrr
 NULL

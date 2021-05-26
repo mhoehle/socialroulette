@@ -12,7 +12,7 @@
 #' time unit (typically days) ago, that individual \eqn{i} and \eqn{j} were in the same group.
 #' Note: This distance is derived by looking at the previous partitions and it is a matter
 #' of definition what this value should be, if \eqn{i} and \eqn{j} have not previously been
-#' in the same group. Let \eqn{n_g=n\> \text{div}\> m} denote the resulting number of groups where \eqn{\text{div}} denotes integer division.
+#' in the same group. Let \eqn{G=n\> \text{div}\> m} denote the resulting number of groups where \eqn{\text{div}} denotes integer division.
 #' For a given partition let \eqn{x_{ig}} be an indicator variable, which is 1, if \eqn{i} is assigned into
 #' group \eqn{g} and zero otherwise.
 #' A solver of the maximally diverse grouping problem now tries to maximize
@@ -28,7 +28,7 @@
 #' Note: The code calls C++ code by Xiangjing Lai and Jin-Kao Hao,
 #' for this several temporary files are generated using `tempfile()`.
 #'
-#' @param mdg_format_file Path to the file containing the MDGP specification in mdgplib format
+#' @param mdgp_format_file Path to the file containing the MDGP specification in mdgplib format
 #' @param time_limit Number of seconds to iteratively optimize each run. The larger the number of participants to group, the larger this value should be. Rule of thumb: time_limit = exp(0.5 + 0.0025*n)
 #' @return File name of the solution file
 #'
@@ -91,7 +91,7 @@ mdgp_write_specfile <- function(current_frame, past_partitions, m) {
   # Vector containing min and max of each group
   g_spec <- sort(rep(as.numeric(names(n_groupsize)), times=n_groupsize), decreasing=TRUE)
   g_spec <- rep(g_spec, each=2)
-  spec <- stringr::str_c(n, " ",n_g, " ds ", stringr::str_c(g_spec, collapse=" "))
+  spec <- str_c(n, " ",n_g, " ds ", str_c(g_spec, collapse=" "))
 
   # Compute distances to last meet for each id in current_frame
   dist_frame <- partitions_to_distance(current_frame, past_partitions)
@@ -111,7 +111,7 @@ mdgp_write_specfile <- function(current_frame, past_partitions, m) {
   stopifnot( all(dist_frame$idx.id1.ord < dist_frame$idx.id2.ord))
 
   #Make a temporary file
-  tmp_file <- stringr::str_c(tempfile(), ".txt")
+  tmp_file <- str_c(tempfile(), ".txt")
   writeLines(spec, tmp_file)
   readr::write_delim(dist_frame %>% dplyr::select(idx.id1.ord,idx.id2.ord,dist), file=tmp_file, col_names=FALSE, append=TRUE)
 
@@ -129,9 +129,9 @@ mdgp_read_solutionfile <- function(file_name) {
   # Read first line containing n=N and G (no. groups)
   line1 <- readLines(file_name, n=1)
   # Extract number of groups
-  n_g <- stringr::str_replace(line1, ".*(G = )([0-9]+).*", "\\2") %>% as.numeric()
+  n_g <- str_replace(line1, ".*(G = )([0-9]+).*", "\\2") %>% as.numeric()
   # Extract number of individuals n
-  n <- stringr::str_replace(line1, "^(N = )([0-9]+).*", "\\2") %>% as.numeric()
+  n <- str_replace(line1, "^(N = )([0-9]+).*", "\\2") %>% as.numeric()
 
   #Read the groups (col_types argument used to avoid output - see ?readr::read_delim)
   groups <- readr::read_delim(file=file_name, skip=1 + n_g, delim=" ", col_names=c("id_int", "group"), col_types = cols()) %>%
@@ -296,6 +296,7 @@ partitions_to_distance <- function(current_frame, past_partitions) {
 #' @param frame The frame with `id` and `group` columns to convert
 #' @return A partition, i.e. a list of vectors, where each vector contains all individuals in the corresponding group
 #' @keywords internal
+#' @export
 #' @examples
 #' p <- tibble::tibble(id=sprintf("id%.02d",1:5), group=c(1,1,1,2,2))
 #' socialroulette::frame_to_partition(p)
@@ -308,7 +309,7 @@ frame_to_partition <- function(frame) {
 #'
 #' The resulting \code{tibble} will have an additional column \code{group}
 #'
-#' @param A partition, i.e. list of vectors, where each vector contains all individuals in the corresponding group
+#' @param l A partition, i.e. list of vectors, where each vector contains all individuals in the corresponding group
 #' @return frame The frame with `id` and `group` columns to convert
 #' @export
 #' @examples
@@ -342,7 +343,9 @@ mdgp_partition_to_frame <- function(mdgp_partition, frame ) {
 #' Lai and Hao (2016) in order to maximize time since last meets over all groups.
 #'
 #' @param current_frame A tibble containing the participants of the current round, i.e. it has a column `id` containing a unique identifier and a `date` column representing the date of the partition.
+#' @param past_partitions A list of partition lists each named by the date the partition was used (this is used to determine temporal distance to last meeting)
 #' @param m minimum group size, i.e. all groups will be at least size m.
+#' @param algorithm String specifying either "srs" (simple random sampling - DEFAULT) or "mdgp" (maximally diverse grouping problem)
 #' @param \dots Additional arguments to be sent to the solver
 #' @return A partitioning of current_frame maximizing the overall sum of gossip to be exchanged.
 #'
@@ -360,7 +363,8 @@ mdgp_partition_to_frame <- function(mdgp_partition, frame ) {
 #' #Generate list of past partitions
 #' past_partitions <- list(round1) %>% setNames(today)
 #' frame2 <- frame %>% dplyr::mutate(date = today+7)
-#' round2 <- rsocialroulette(current_frame = frame2, past_partitions=past_partitions, m=2, algorithm="mdgp")
+#' round2 <- rsocialroulette(current_frame = frame2,
+#'                           past_partitions=past_partitions, m=2, algorithm="mdgp")
 #' round2
 #' @export
 rsocialroulette <- function(current_frame, past_partitions=NULL, m, algorithm=c("mdgp", "srs"), ...) {
@@ -373,7 +377,7 @@ rsocialroulette <- function(current_frame, past_partitions=NULL, m, algorithm=c(
     stop("Simple random sampling (srs) does not work with past partition information.")
   }
   #Debug info
-  cat(stringr::str_c("Partitioning ", nrow(current_frame), " individuals into groups of at least ", m, " (", ifelse(is.null(past_partitions),"no past partitions", "Optimizing wrt. past partitions"),").\n"))
+  cat(str_c("Partitioning ", nrow(current_frame), " individuals into groups of at least ", m, " (", ifelse(is.null(past_partitions),"no past partitions", "Optimizing wrt. past partitions"),").\n"))
 
   #Read output and convert it to a partition
   if (algorithm == "mdgp") {
@@ -391,7 +395,7 @@ rsocialroulette <- function(current_frame, past_partitions=NULL, m, algorithm=c(
   #Group sizes etc.
   groups <- purrr::map_dbl(partition, length)
 
-  cat(stringr::str_c("Created ", length(groups), " groups of sizes ", stringr::str_c(groups, collapse=" "), ".\n"))
+  cat(str_c("Created ", length(groups), " groups of sizes ", str_c(groups, collapse=" "), ".\n"))
 
   return(partition)
 }
