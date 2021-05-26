@@ -361,7 +361,7 @@ mdgp_partition_to_frame <- function(mdgp_partition, frame ) {
 #' https://doi.org/10.1016/j.ejor.2016.05.018
 #' @examples
 #' today <- Sys.Date()
-#' frame <- tibble::tibble( id=sprintf("id%.02d",1:5), date=today)
+#' frame <- tibble::tibble( id=sprintf("id%.02d",1:4), date=today)
 #' round1 <- rsocialroulette(current_frame = frame, m=2, algorithm="srs")
 #' round1
 #'
@@ -369,7 +369,7 @@ mdgp_partition_to_frame <- function(mdgp_partition, frame ) {
 #' past_partitions <- list(round1) %>% setNames(today)
 #' frame2 <- frame %>% dplyr::mutate(date = today+7)
 #' #round2 <- rsocialroulette(current_frame = frame2,
-#' #                           past_partitions=past_partitions, m=2, algorithm="mdgp")
+#' #                            past_partitions=past_partitions, m=2, algorithm="mdgp")
 #' #round2
 #' @export
 rsocialroulette <- function(current_frame, past_partitions=NULL, m, algorithm=c("mdgp", "srs"), ...) {

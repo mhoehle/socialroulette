@@ -6,11 +6,12 @@ down to an instance of the maximally diverse grouping problem.
 See the [package website](https://hoehleatsu.github.io/socialroulette/)  for more information, documentation and examples. The package source code is available from [GitHub](https://github.com/hoehleatsu/socialroulette/).
 
 ```
-# Install package
+# Install & load package
 devtools::install_github("hoehleatsu/socialroulette")
+library(socialroulette)
 
 # Distribute 5 ppl into groups of size at least 2 using simple random sampling
-frame <- tibble(id=sprintf("id%.3d", 1:5), date=Sys.Date())
+frame <- tibble::tibble(id=sprintf("id%.3d", 1:5), date=Sys.Date())
 rsocialroulette(frame, past_partitions=NULL, m=2, algorithm="srs")
 
 # Distribute 5 ppl into groups with m=2, but s.t. as few reunions as possible occur 
