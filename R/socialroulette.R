@@ -49,8 +49,8 @@ mdgp_solver <- function(mdgp_format_file, time_limit= 15) {
 
 
   #Temporary file for the output
-  output_file <- tempfile(fileext = ".txt")
-  solution_file <- tempfile(fileext = ".sol")
+  output_file <- tempfile() #tempfile(fileext = ".txt")
+  solution_file <- tempfile() #tempfile(fileext = ".sol")
 
   #Call C++ code
   .C("mdgp",
@@ -116,7 +116,7 @@ mdgp_write_specfile <- function(current_frame, past_partitions, m) {
   stopifnot( all(dist_frame$idx.id1.ord < dist_frame$idx.id2.ord))
 
   #Make a temporary file
-  tmp_file <- tempfile(fileext = ".txt")
+  tmp_file <- stringr::str_c(tempfile(), ".txt") #tempfile(fileext = ".txt")
   writeLines(spec, tmp_file)
   readr::write_delim(dist_frame %>% dplyr::select(idx.id1.ord,idx.id2.ord,dist), file=tmp_file, col_names=FALSE, append=TRUE)
 
@@ -369,7 +369,7 @@ mdgp_partition_to_frame <- function(mdgp_partition, frame ) {
 #' past_partitions <- list(round1) %>% setNames(today)
 #' frame2 <- frame %>% dplyr::mutate(date = today+7)
 #' #round2 <- rsocialroulette(current_frame = frame2,
-#' #                          past_partitions=past_partitions, m=2, algorithm="mdgp")
+#' #                           past_partitions=past_partitions, m=2, algorithm="mdgp")
 #' #round2
 #' @export
 rsocialroulette <- function(current_frame, past_partitions=NULL, m, algorithm=c("mdgp", "srs"), ...) {

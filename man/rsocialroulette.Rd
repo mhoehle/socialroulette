@@ -41,7 +41,7 @@ round1
 past_partitions <- list(round1) \%>\% setNames(today)
 frame2 <- frame \%>\% dplyr::mutate(date = today+7)
 #round2 <- rsocialroulette(current_frame = frame2,
-#                          past_partitions=past_partitions, m=2, algorithm="mdgp")
+#                           past_partitions=past_partitions, m=2, algorithm="mdgp")
 #round2
 }
 \references{

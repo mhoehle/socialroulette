@@ -253,7 +253,7 @@ void Outputing(Solution &S, char *filename)
     fprintf(fp,"N = %d  G = %d  f = %lf\n", N , K, S.cost);
     for(i=0;i<K;i++)
     fprintf(fp,"%5.2d   %5.2d   %5.2d \n", LB[i], UB[i], S.SizeG[i]);
-    //Rprintf("\n");
+    Rprintf("\n");
     for(i=0;i<N;i++)
     fprintf(fp,"%5.3d   %5.2d\n",i, S.p[i]);
 	fclose(fp);
