@@ -93,7 +93,8 @@ void inputing()
 	FIC.open(File_Name);
 	if ( FIC.fail() )
 	{
-		cout << "### Erreur open, File_Name " << File_Name << endl;
+		//hoehle: cout << "### Erreur open, File_Name " << File_Name << endl;
+	  Rprintf("### Erreur open, File_Name: %s\n", File_Name);
 		exit(0);
 	}
 	FIC >> N >> K;
@@ -101,7 +102,8 @@ void inputing()
 	FIC >> StrReading;
 	if ( FIC.eof() )
 	{
-		cout << "### Error open, File_Name " << File_Name << endl;
+		//cout << "### Error open, File_Name " << File_Name << endl;
+	  Rprintf("### Erreur open, File_Name: %s\n", File_Name);
 		exit(0);
 	}
 	Rprintf("Read file...\n");
@@ -129,8 +131,9 @@ void inputing()
 			//cout << x1 <<"  "<< x2 <<"  "<<d<<" "<< endl;
 			if ( x1<0 || x2<0 || x1>=N || x2 >=N )
 			{
-				cout << "### Error of node : x1="
-					<< x1 << ", x2=" << x2 << endl;
+				//cout << "### Error of node : x1="
+				//	<< x1 << ", x2=" << x2 << endl;
+				Rprintf("### Error of node : x1=%d, x2=%d\n", x1, x2);
 				exit(0);
 			}
 			if(x1 != x2)
@@ -248,14 +251,14 @@ void Outputing(Solution &S, char *filename)
 	r= rand()%1000;//random number in the range 0-1000
 
 	if(Proof(S)==0) return;
-    sprintf(buff,"%s",filename);
-    fp=fopen(buff,"a+");
-    fprintf(fp,"N = %d  G = %d  f = %lf\n", N , K, S.cost);
-    for(i=0;i<K;i++)
-    fprintf(fp,"%5.2d   %5.2d   %5.2d \n", LB[i], UB[i], S.SizeG[i]);
-    Rprintf("\n");
-    for(i=0;i<N;i++)
-    fprintf(fp,"%5.3d   %5.2d\n",i, S.p[i]);
+	sprintf(buff,"%s",filename);
+	fp=fopen(buff,"a+");
+	fprintf(fp,"N = %d  G = %d  f = %lf\n", N , K, S.cost);
+	for(i=0;i<K;i++)
+	  fprintf(fp,"%5.2d   %5.2d   %5.2d \n", LB[i], UB[i], S.SizeG[i]);
+	Rprintf("\n");
+	for(i=0;i<N;i++)
+	  fprintf(fp,"%5.3d   %5.2d\n",i, S.p[i]);
 	fclose(fp);
 }
 
