@@ -31,4 +31,4 @@ Suggests:
     knitr,
     igraph,
     ggplot2
-VignetteBuilder: knitr
+VignetteBuilder: rmarkdown

@@ -4,7 +4,7 @@
 \alias{mdgp_solver}
 \title{Maximally diverse grouping problem solver based on Lai and Hao (2016)}
 \usage{
-mdgp_solver(mdgp_format_file, time_limit = 30)
+mdgp_solver(mdgp_format_file, time_limit = 15)
 }
 \arguments{
 \item{mdgp_format_file}{Path to the file containing the MDGP specification in mdgplib format}
@@ -41,8 +41,9 @@ where \eqn{n_g} is the size of group \eqn{g}, i.e. \eqn{\sum_{g=1}^G n_g = n}. W
 that group sizes are determined by assigning the labels \eqn{1,\ldots,G} to all individuals and then count
 how often each label occurs. This means, e.g., that for \eqn{n=7} and \eqn{m=4} we get \eqn{n_g=7\> \text{div}\> 4=1} group with 7 members.
 
-Note: The code calls C++ code by Xiangjing Lai and Jin-Kao Hao,
-for this several temporary files are generated using `tempfile()`.
+Note: The code calls C++ code by Xiangjing Lai and Jin-Kao Hao. This is
+an R adapted version of the C++ code available from http://www.info.univ-angers.fr/%7Ehao/mdgp.html
+Note: several temporary files are generated using `tempfile()`.
 }
 \references{
 Xiangjing Lai and Jin-Kao Hao (2016). *Iterated maxima search for the maximally

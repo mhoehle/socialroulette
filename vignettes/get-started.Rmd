@@ -4,7 +4,7 @@ output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Getting Started}
   %\VignetteEncoding{UTF-8}
-  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEngine{rmarkdown::render}
 editor_options: 
   chunk_output_type: console
 ---
@@ -33,7 +33,7 @@ The aim is to partition $n$ participants into groups of size at least $m$. We sh
 
 We begin by loading relevant [tidyverse packages](https://www.tidyverse.org/) and the `socialroulette` package.
 
-```{r, results="hide", message=FALSE}
+```{r, echo=FALSE, results="hide", message=FALSE}
 library(dplyr)
 library(purrr)
 library(readr)

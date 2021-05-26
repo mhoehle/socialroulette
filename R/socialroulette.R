@@ -25,8 +25,9 @@
 #' that group sizes are determined by assigning the labels \eqn{1,\ldots,G} to all individuals and then count
 #' how often each label occurs. This means, e.g., that for \eqn{n=7} and \eqn{m=4} we get \eqn{n_g=7\> \text{div}\> 4=1} group with 7 members.
 #'
-#' Note: The code calls C++ code by Xiangjing Lai and Jin-Kao Hao,
-#' for this several temporary files are generated using `tempfile()`.
+#' Note: The code calls C++ code by Xiangjing Lai and Jin-Kao Hao. This is
+#' an R adapted version of the C++ code available from http://www.info.univ-angers.fr/%7Ehao/mdgp.html
+#' Note: several temporary files are generated using `tempfile()`.
 #'
 #' @param mdgp_format_file Path to the file containing the MDGP specification in mdgplib format
 #' @param time_limit Number of seconds to iteratively optimize each run. The larger the number of participants to group, the larger this value should be. Rule of thumb: time_limit = exp(0.5 + 0.0025*n)
@@ -37,15 +38,19 @@
 #' https://doi.org/10.1016/j.ejor.2016.05.018
 #'
 #' @author Xiangjing Lai and Jin-Kao Hao, R interface by M. Höhle
-#' @useDynLib socialroulette mdgp
-mdgp_solver <- function(mdgp_format_file, time_limit= 30) {
+#' @useDynLib socialroulette, .registration = TRUE
+mdgp_solver <- function(mdgp_format_file, time_limit= 15) {
+  # Dyn loading help:
+  # https://thecoatlessprofessor.com/programming/r/registration-of-entry-points-in-compiled-code-loaded-into-r/
+
   #Sanity checks
   stopifnot(is.character(mdgp_format_file))
   stopifnot(file.exists(mdgp_format_file))
 
+
   #Temporary file for the output
-  output_file <- tempfile()
-  solution_file <- tempfile()
+  output_file <- tempfile(fileext = ".txt")
+  solution_file <- tempfile(fileext = ".sol")
 
   #Call C++ code
   .C("mdgp",
@@ -91,7 +96,7 @@ mdgp_write_specfile <- function(current_frame, past_partitions, m) {
   # Vector containing min and max of each group
   g_spec <- sort(rep(as.numeric(names(n_groupsize)), times=n_groupsize), decreasing=TRUE)
   g_spec <- rep(g_spec, each=2)
-  spec <- str_c(n, " ",n_g, " ds ", str_c(g_spec, collapse=" "))
+  spec <- stringr::str_c(n, " ",n_g, " ds ", stringr::str_c(g_spec, collapse=" "))
 
   # Compute distances to last meet for each id in current_frame
   dist_frame <- partitions_to_distance(current_frame, past_partitions)
@@ -111,7 +116,7 @@ mdgp_write_specfile <- function(current_frame, past_partitions, m) {
   stopifnot( all(dist_frame$idx.id1.ord < dist_frame$idx.id2.ord))
 
   #Make a temporary file
-  tmp_file <- str_c(tempfile(), ".txt")
+  tmp_file <- tempfile(fileext = ".txt")
   writeLines(spec, tmp_file)
   readr::write_delim(dist_frame %>% dplyr::select(idx.id1.ord,idx.id2.ord,dist), file=tmp_file, col_names=FALSE, append=TRUE)
 
@@ -134,7 +139,7 @@ mdgp_read_solutionfile <- function(file_name) {
   n <- str_replace(line1, "^(N = )([0-9]+).*", "\\2") %>% as.numeric()
 
   #Read the groups (col_types argument used to avoid output - see ?readr::read_delim)
-  groups <- readr::read_delim(file=file_name, skip=1 + n_g, delim=" ", col_names=c("id_int", "group"), col_types = cols()) %>%
+  groups <- readr::read_delim(file=file_name, skip=1 + n_g, delim=" ", col_names=c("id_int", "group"), col_types = readr::cols()) %>%
     dplyr::mutate(idx = as.numeric(id_int)+1,
            group = as.numeric(group) + 1) %>%
     dplyr::select(idx, group)
@@ -363,9 +368,9 @@ mdgp_partition_to_frame <- function(mdgp_partition, frame ) {
 #' #Generate list of past partitions
 #' past_partitions <- list(round1) %>% setNames(today)
 #' frame2 <- frame %>% dplyr::mutate(date = today+7)
-#' round2 <- rsocialroulette(current_frame = frame2,
-#'                           past_partitions=past_partitions, m=2, algorithm="mdgp")
-#' round2
+#' #round2 <- rsocialroulette(current_frame = frame2,
+#' #                          past_partitions=past_partitions, m=2, algorithm="mdgp")
+#' #round2
 #' @export
 rsocialroulette <- function(current_frame, past_partitions=NULL, m, algorithm=c("mdgp", "srs"), ...) {
   # Sanity checks
@@ -377,7 +382,7 @@ rsocialroulette <- function(current_frame, past_partitions=NULL, m, algorithm=c(
     stop("Simple random sampling (srs) does not work with past partition information.")
   }
   #Debug info
-  cat(str_c("Partitioning ", nrow(current_frame), " individuals into groups of at least ", m, " (", ifelse(is.null(past_partitions),"no past partitions", "Optimizing wrt. past partitions"),").\n"))
+  cat(stringr::str_c("Partitioning ", nrow(current_frame), " individuals into groups of at least ", m, " (", ifelse(is.null(past_partitions),"no past partitions", "Optimizing wrt. past partitions"),").\n"))
 
   #Read output and convert it to a partition
   if (algorithm == "mdgp") {
@@ -395,7 +400,7 @@ rsocialroulette <- function(current_frame, past_partitions=NULL, m, algorithm=c(
   #Group sizes etc.
   groups <- purrr::map_dbl(partition, length)
 
-  cat(str_c("Created ", length(groups), " groups of sizes ", str_c(groups, collapse=" "), ".\n"))
+  cat(stringr::str_c("Created ", length(groups), " groups of sizes ", stringr::str_c(groups, collapse=" "), ".\n"))
 
   return(partition)
 }

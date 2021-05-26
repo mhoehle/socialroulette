@@ -242,17 +242,18 @@ int Proof(Solution &S)
 
 void Outputing(Solution &S, char *filename)
 {
-    int i;int r;
+  int i;int r;
 	FILE *fp;
 	char buff[80];
 	r= rand()%1000;//random number in the range 0-1000
+
 	if(Proof(S)==0) return;
     sprintf(buff,"%s",filename);
     fp=fopen(buff,"a+");
     fprintf(fp,"N = %d  G = %d  f = %lf\n", N , K, S.cost);
     for(i=0;i<K;i++)
     fprintf(fp,"%5.2d   %5.2d   %5.2d \n", LB[i], UB[i], S.SizeG[i]);
-    Rprintf("\n");
+    //Rprintf("\n");
     for(i=0;i<N;i++)
     fprintf(fp,"%5.3d   %5.2d\n",i, S.p[i]);
 	fclose(fp);
@@ -1111,8 +1112,12 @@ extern "C" {
       F_ave += F[i];
     }
     F_ave /=  Times;
+
+    Rprintf("Outputting...\n");
     Out_results(F_best , F_ave, F_worst, Output_File_Name, File_Name);
+    Rprintf("Outputting solution file...\n");
     Outputing(OS, Solution_File);
+    Rprintf("Done...cleaning memory and whatnot...\n");
     ReleaseMemery();
 
     //Release RNG - https://cran.r-project.org/doc/manuals/R-exts.html#Random-numbers
