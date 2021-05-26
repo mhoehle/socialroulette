@@ -21,3 +21,5 @@ rsocialroulette(frame, past_partitions=last_round, m=2, algorithm="mdgp", time_l
 
 More complex partition algorithms, e.g., maximizing the distance in time since the people in the groups met the last time, are also available from the package. For more information see the [Getting started](https://hoehleatsu.github.io/socialroulette/articles/get-started.html) vignette of the package.
 
+
+
