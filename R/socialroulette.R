@@ -38,10 +38,11 @@
 #' https://doi.org/10.1016/j.ejor.2016.05.018
 #'
 #' @author Xiangjing Lai and Jin-Kao Hao, R interface by M. Höhle
-#' @useDynLib socialroulette, .registration = TRUE
+#' @useDynLib socialroulette mdgp
 mdgp_solver <- function(mdgp_format_file, time_limit= 15) {
   # Dyn loading help:
   # https://thecoatlessprofessor.com/programming/r/registration-of-entry-points-in-compiled-code-loaded-into-r/
+  ###@useDynLib socialroulette, .registration = TRUE
 
   #Sanity checks
   stopifnot(is.character(mdgp_format_file))
@@ -368,9 +369,9 @@ mdgp_partition_to_frame <- function(mdgp_partition, frame ) {
 #' #Generate list of past partitions
 #' past_partitions <- list(round1) %>% setNames(today)
 #' frame2 <- frame %>% dplyr::mutate(date = today+7)
-#' #round2 <- rsocialroulette(current_frame = frame2,
-#' #                            past_partitions=past_partitions, m=2, algorithm="mdgp")
-#' #round2
+#' round2 <- rsocialroulette(current_frame = frame2,
+#'                             past_partitions=past_partitions, m=2, algorithm="mdgp")
+#' round2
 #' @export
 rsocialroulette <- function(current_frame, past_partitions=NULL, m, algorithm=c("mdgp", "srs"), ...) {
   # Sanity checks

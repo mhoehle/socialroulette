@@ -40,9 +40,9 @@ round1
 #Generate list of past partitions
 past_partitions <- list(round1) \%>\% setNames(today)
 frame2 <- frame \%>\% dplyr::mutate(date = today+7)
-#round2 <- rsocialroulette(current_frame = frame2,
-#                            past_partitions=past_partitions, m=2, algorithm="mdgp")
-#round2
+round2 <- rsocialroulette(current_frame = frame2,
+                            past_partitions=past_partitions, m=2, algorithm="mdgp")
+round2
 }
 \references{
 Höhle M (2021), Long time, no see: Virtual Lunch Roulette, Blog post, \url{https://staff.math.su.se/hoehle/blog/2021/04/04/socialsamp.html}
