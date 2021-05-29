@@ -38,11 +38,12 @@
 #' https://doi.org/10.1016/j.ejor.2016.05.018
 #'
 #' @author Xiangjing Lai and Jin-Kao Hao, R interface by M. Höhle
-#' @useDynLib socialroulette mdgp
+#' @useDynLib socialroulette, .registration = TRUE
 mdgp_solver <- function(mdgp_format_file, time_limit= 15) {
   # Dyn loading help:
   # https://thecoatlessprofessor.com/programming/r/registration-of-entry-points-in-compiled-code-loaded-into-r/
   ###@useDynLib socialroulette, .registration = TRUE
+  # @useDynLib socialroulette mdgp
 
   #Sanity checks
   stopifnot(is.character(mdgp_format_file))

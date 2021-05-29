@@ -84,7 +84,7 @@ int * UB; // Upper bound of the number of elements in the group i
 /******************************************************************************************/
 /********************    2. Inputing Data and Assign Memeries   ***************************/
 /******************************************************************************************/
-void inputing()
+int inputing()
 {
     int i,j;
     int x1, x2;
@@ -95,7 +95,7 @@ void inputing()
 	{
 		//hoehle: cout << "### Erreur open, File_Name " << File_Name << endl;
 	  Rprintf("### Erreur open, File_Name: %s\n", File_Name);
-		exit(0);
+		return(0); //exit(0);
 	}
 	FIC >> N >> K;
 	char StrReading[100];
@@ -104,7 +104,7 @@ void inputing()
 	{
 		//cout << "### Error open, File_Name " << File_Name << endl;
 	  Rprintf("### Erreur open, File_Name: %s\n", File_Name);
-		exit(0);
+		return(0); //exit(0);
 	}
 	Rprintf("Read file...\n");
 	if ( strcmp(StrReading, "ds" )==0 || strcmp(StrReading, "ss" )==0 )
@@ -134,7 +134,7 @@ void inputing()
 				//cout << "### Error of node : x1="
 				//	<< x1 << ", x2=" << x2 << endl;
 				Rprintf("### Error of node : x1=%d, x2=%d\n", x1, x2);
-				exit(0);
+				return(0); //exit(0);
 			}
 			if(x1 != x2)
 			{
@@ -149,6 +149,7 @@ void inputing()
      }
 
      FIC.close();
+	   return(1);
  }
 
 void AssignMemery()
@@ -1076,7 +1077,7 @@ extern "C" {
 
 
     Rprintf("Inputting...\n");
-    inputing();
+    if (!inputing()) { Rprintf("Input failed.\n"); return; };
     Rprintf("Assigning memory...\n");
     AssignMemery();
 
