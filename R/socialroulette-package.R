@@ -21,5 +21,7 @@
 #' @importFrom stringr str_c str_replace
 #' @import dplyr
 #' @import purrr
+#' @importFrom rlang .data
 NULL
 
+# See eliminating R CMD check notes in https://cran.r-project.org/web/packages/dplyr/vignettes/programming.html

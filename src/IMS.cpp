@@ -246,10 +246,12 @@ int Proof(Solution &S)
 
 void Outputing(Solution &S, char *filename)
 {
-  int i;int r;
+  int i; //hoehle: not used: int r;
 	FILE *fp;
 	char buff[80];
-	r= rand()%1000;//random number in the range 0-1000
+
+	//hoehle: I don't see r used anywhere in the subsequent code. Commented out
+	//r= rand()%1000;//random number in the range 0-1000
 
 	if(Proof(S)==0) return;
 	sprintf(buff,"%s",filename);
@@ -294,7 +296,9 @@ void RandomInitiaSol(int p[],int SizeG[])
      tot_number=0;
      while(tot_number < sum)
      {
-        p1 = rand()%N;
+        //hoehle: don't use rand
+        //p1 = rand()%N;
+        p1 = (int)floor(unif_rand() * (N+1));
         if(Flag[p1]==0)
         {
            count=0;
@@ -317,13 +321,17 @@ void RandomInitiaSol(int p[],int SizeG[])
      tot_number=0;
      while(tot_number < N - sum)
      {
-        p1 = rand()%N;
+        //hoehle: don't use C's RNG
+        //p1 = rand()%N;
+        p1 = (int)floor(unif_rand() * (N+1));
         if(Flag[p1]==0)
         {
 
            while(1)
            {
-              count = rand()%K;
+              //hoehle: don't use C's RNG
+              //count = rand()%K;
+              count = (int)floor(unif_rand() * (K+1));
               if(SizeGroup[count] < UB[count])
               {
                 p[p1] = count;
@@ -364,7 +372,9 @@ void GreedyInitiaSol(int p[],int SizeGroup[])
      {
          while(1)
          {
-             r = rand()%N;
+             //hoehle: don't use C's RNG
+             //r = rand()%N;
+             r = (int)floor(unif_rand() * (N+1));
              if(Flag[r]==0)
              {
                 p[r] = g;
@@ -381,7 +391,8 @@ void GreedyInitiaSol(int p[],int SizeGroup[])
      while(tot_number < sum)
      {
 
-        cur_index = rand()%N;
+        //hoehle: cur_index = rand()%N;
+        cur_index = (int)floor(unif_rand() * (N+1));
         do
         {
            cur_index = (cur_index + 1)%N;
@@ -412,7 +423,9 @@ void GreedyInitiaSol(int p[],int SizeGroup[])
      tot_number=0;
      while(tot_number < N - sum)
      {
-        cur_index = rand()%N;
+        //hoehle: don't use C's RNG
+        //cur_index = rand()%N;
+        cur_index = (int)floor(unif_rand() * (N+1));
         do
         {
           cur_index = (cur_index + 1)%N;
@@ -744,7 +757,9 @@ void MinimaSearch(int partition[], int SizeGroup[], double *cost)
          do
          {
 
-           cur_index = rand()%NumberNeighbors; // Please ensure that MAX_RAND is large enough !!!!
+           //hoehle
+           //cur_index = rand()%NumberNeighbors; // Please ensure that MAX_RAND is large enough !!!!
+           cur_index = (int)floor(unif_rand() * (NumberNeighbors+1));
 
            if(Neighbors[cur_index].type == 1 )
            {
@@ -825,10 +840,12 @@ void Shake1(int partition[], int k_max)
    iter = k_max;
    while( iter > 0 )
    {
-       r1 = rand()%N;
+       //hoehle: r1 = rand()%N;
+       r1 = (int)floor(unif_rand() * (N+1));
        while(1)
        {
-          r2 = rand()%N;
+          //r2 = rand()%N;
+          r2 = (int)floor(unif_rand() * (N+1));
           if( partition[r1] != partition[r2]) break;
        }
        swap = partition[r1];
@@ -858,8 +875,9 @@ void Shake2(int L, int partition[], int SizeGroup[])
 
     do
 	{
-
-        cur_index = rand()% NumberNeighbors;
+       //hoehle
+       // cur_index = rand()% NumberNeighbors;
+       cur_index = (int)floor(unif_rand() * (NumberNeighbors+1));
 
         if(Neighbors[cur_index].type == 1 )
         {
@@ -1051,14 +1069,15 @@ extern "C" {
   void mdgp(char **File_Name_R, char **Output_File_Name_R, char **Solution_File_Name_R, double *Time_limit_R) {
     int i,j;
     int i1,j1;
-    int seed;
+    //hoehle: not needed anymore: int seed;
     const int  Times = 10; //hoehle: used to be 20
     double F[Times];
     double F_best= -99999999, F_worst = 999999999, F_ave = 0.0;
 
-    //Seed the random number generator
-    seed = time(NULL) % 1000000 ;
-    srand( seed );
+    //Seed the random number generator in C - superseeded by R's RNG
+    // seed = time(NULL) % 1000000 ;
+    // srand( seed );
+
     //Setup R random number generator
     GetRNGstate();
 

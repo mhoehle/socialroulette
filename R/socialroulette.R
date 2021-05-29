@@ -104,15 +104,16 @@ mdgp_write_specfile <- function(current_frame, past_partitions, m) {
   dist_frame <- partitions_to_distance(current_frame, past_partitions)
 
   # Make alternative index number (starting from zero) for MDGP-solver instead of the id
-  ids <- current_frame %>% dplyr::mutate(idx = dplyr::row_number() - 1) %>% dplyr::select(id, idx)
+  ids <- current_frame %>% dplyr::mutate(idx = dplyr::row_number() - 1) %>%
+    dplyr::select(.data$id, .data$idx)
   # and add this to the dist_frame
   dist_frame <-  dplyr::left_join(dist_frame, ids, by=c("id1"="id")) %>%
     dplyr::left_join(ids, by=c("id2"="id")) %>%
-    dplyr::rename(idx.id1 = dplyr::all_of("idx.x"), idx.id2=dplyr::all_of("idx.y")) %>%
+    dplyr::rename(idx.id1 = .data$idx.x, idx.id2=.data$idx.y) %>%
     #Make sure idx.id1 < idx.id2 as this is needed for the solver
-    dplyr::mutate( idx.id1.ord = pmin(idx.id1, idx.id2),
-                   idx.id2.ord = pmax(idx.id1, idx.id2)) %>%
-    dplyr::arrange(all_of("idx.id1.ord"), dplyr::all_of("idx.id2.ord"))
+    dplyr::mutate( idx.id1.ord = pmin(.data$idx.id1, .data$idx.id2),
+                   idx.id2.ord = pmax(.data$idx.id1, .data$idx.id2)) %>%
+    dplyr::arrange(.data$idx.id1.ord, .data$idx.id2.ord)
 
   #Sanity check
   stopifnot( all(dist_frame$idx.id1.ord < dist_frame$idx.id2.ord))
@@ -120,7 +121,7 @@ mdgp_write_specfile <- function(current_frame, past_partitions, m) {
   #Make a temporary file
   tmp_file <- stringr::str_c(tempfile(), ".txt") #tempfile(fileext = ".txt")
   writeLines(spec, tmp_file)
-  readr::write_delim(dist_frame %>% dplyr::select(idx.id1.ord,idx.id2.ord,dist), file=tmp_file, col_names=FALSE, append=TRUE)
+  readr::write_delim(dist_frame %>% dplyr::select(.data$idx.id1.ord,.data$idx.id2.ord,.data$dist), file=tmp_file, col_names=FALSE, append=TRUE)
 
   #Done - return filename
   return(tmp_file)
@@ -142,9 +143,9 @@ mdgp_read_solutionfile <- function(file_name) {
 
   #Read the groups (col_types argument used to avoid output - see ?readr::read_delim)
   groups <- readr::read_delim(file=file_name, skip=1 + n_g, delim=" ", col_names=c("id_int", "group"), col_types = readr::cols()) %>%
-    dplyr::mutate(idx = as.numeric(id_int)+1,
-           group = as.numeric(group) + 1) %>%
-    dplyr::select(idx, group)
+    dplyr::mutate(idx = as.numeric(.data$id_int)+1,
+           group = as.numeric(.data$group) + 1) %>%
+    dplyr::select(.data$idx, .data$group)
 
   return(groups)
 }
@@ -180,7 +181,7 @@ make_partition_srs <- function(frame, m) {
 #' @return a data.frame containing all pairs with id of the first being smaller than the id of the second entry
 #' @keywords internal
 group_to_pairs <- function(group) {
-  tidyr::expand_grid(id1=group, id2=group) %>% dplyr::filter(id1 < id2)
+  tidyr::expand_grid(id1=group, id2=group) %>% dplyr::filter(.data$id1 < .data$id2)
 }
 
 #' Convert a list of partitions into a data.frame with all pairs
@@ -262,9 +263,9 @@ pairs_to_partitions <- function(pairs) {
 
 partitions_to_distance <- function(current_frame, past_partitions) {
   #Make all potential pairs in current_frame
-  current_pairs <- tidyr::expand_grid(id1=current_frame %>%  dplyr::pull(id),
-                               id2=current_frame %>%  dplyr::pull(id)) %>%
-    dplyr::filter(id1 < id2) %>%
+  current_pairs <- tidyr::expand_grid(id1=current_frame %>%  dplyr::pull(.data$id),
+                               id2=current_frame %>%  dplyr::pull(.data$id)) %>%
+    dplyr::filter(.data$id1 < .data$id2) %>%
     dplyr::mutate(date = current_frame$date[1])
 
   #If there are no past partitions then no need to do more.
@@ -283,17 +284,17 @@ partitions_to_distance <- function(current_frame, past_partitions) {
     diff() %>%
     mean() %>% as.numeric()
   # Compute with Delta
-  date_no_meet <- (past_pairs %>% dplyr::pull(date) %>% as.Date() %>%  min() ) - Delta
-  dist_today <- ((current_pairs %>% dplyr::pull(date) %>% .[[1]]) - date_no_meet) %>% as.numeric()
+  date_no_meet <- (past_pairs %>% dplyr::pull(.data$date) %>% as.Date() %>%  min() ) - Delta
+  dist_today <- ((current_pairs %>% dplyr::slice(1) %>% dplyr::pull(.data$date)) - date_no_meet) %>% as.numeric()
 
   #Compute dist in days for pairs to past time where they met in a partition
   current_dist <- current_pairs %>%
-    dplyr::left_join(past_pairs %>% dplyr::select(id1, id2, date), by=c("id1", "id2"), suffix=c(".current",".past")) %>%
-    dplyr::mutate(dist = difftime(date.current, date.past, units="days") %>% round() %>%  as.numeric(),
-           dist = dplyr::if_else(is.na(dist), dist_today, dist))
+    dplyr::left_join(past_pairs %>% dplyr::select(.data$id1, .data$id2, .data$date), by=c("id1", "id2"), suffix=c(".current",".past")) %>%
+    dplyr::mutate(dist = difftime(.data$date.current, .data$date.past, units="days") %>% round() %>%  as.numeric(),
+           dist = dplyr::if_else(is.na(.data$dist), dist_today, .data$dist))
 
   #Return
-  return(current_dist %>% dplyr::rename(date = `date.current`) %>% dplyr::select(-date.past))
+  return(current_dist %>% dplyr::rename(date = .data$`date.current`) %>% dplyr::select(-.data$date.past))
 }
 
 #' Take a frame and convert this to a corresponding partition
@@ -340,7 +341,7 @@ mdgp_partition_to_frame <- function(mdgp_partition, frame ) {
   #Match idx to frame
   frame %>% dplyr::mutate(idx = dplyr::row_number()) %>%
     dplyr::left_join(mdgp_partition, by="idx") %>%
-    dplyr::select(-idx)
+    dplyr::select(-.data$idx)
 }
 
 #' Make a new lunch roulette partition maximizing the gossip to exchange
