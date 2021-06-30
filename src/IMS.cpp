@@ -186,9 +186,9 @@ void AssignMemery()
 
 void ReleaseMemery()
 {
-     int i;
+   int i;
 
-     delete [] p; p = NULL;
+   delete [] p; p = NULL;
 	 delete [] bestp; bestp = NULL;
 	 delete [] SizeG; SizeG = NULL;
 
@@ -208,11 +208,11 @@ void ReleaseMemery()
 	 for(i=0;i<N;i++)
 	 {
 	   delete [] Delta_Matrix[i]; Delta_Matrix[i] = NULL ;
-       delete [] Delta_Matrix1[i]; Delta_Matrix1[i] = NULL ;
-       delete [] Delta[i]; Delta[i] = NULL ;
-       delete [] Delta1[i]; Delta1[i] = NULL ;
+     delete [] Delta_Matrix1[i]; Delta_Matrix1[i] = NULL ;
+     delete [] Delta[i]; Delta[i] = NULL ;
+     delete [] Delta1[i]; Delta1[i] = NULL ;
 	   delete [] D[i]; D[i] = NULL;
-       delete [] DT[i]; DT[i] = NULL;
+     delete [] DT[i]; DT[i] = NULL;
 	 }
 
 }
@@ -248,7 +248,7 @@ void Outputing(Solution &S, char *filename)
 {
   int i; //hoehle: not used: int r;
 	FILE *fp;
-	char buff[80];
+	char buff[280]; //hoehle: prepare for long filenames
 
 	//hoehle: I don't see r used anywhere in the subsequent code. Commented out
 	//r= rand()%1000;//random number in the range 0-1000
@@ -268,10 +268,10 @@ void Outputing(Solution &S, char *filename)
 void Out_results(double best , double ave,  double worst, char *filename, char instance[])
 {
 	FILE *fp;
-	char buff[80];
-    sprintf(buff,"%s",filename);
-    fp = fopen(buff,"a+");
-    fprintf(fp,"%s   %lf   %lf   %lf\n", instance, best, ave, worst);
+	char buff[280]; //hoehle: prepare for long filenames
+  sprintf(buff,"%s",filename);
+  fp = fopen(buff,"a+");
+  fprintf(fp,"%s   %lf   %lf   %lf\n", instance, best, ave, worst);
 	fclose(fp);
 }
 
@@ -1100,19 +1100,11 @@ extern "C" {
     Rprintf("Assigning memory...\n");
     AssignMemery();
 
-    //Adjust time limit for special cases
-    // if(N==120) Time_limit = 3;
-    // else if(N==240)Time_limit = 20;
-    // else if(N==480)Time_limit = 120;
-    // else if(N==960)Time_limit = 600;
-    // else if(N==2000)Time_limit= 1200;
-    // else if(N==3000)Time_limit = 3000;
-
     Rprintf("Building neighbours...\n");
     BuildNeighbors();
     Rprintf("Running...\n");
     OS.cost = -99999.0;
-    for(j=0;j<Times;j++) F[j] = 0.0;
+    for(j=0; j < Times; j++) F[j] = 0.0;
     for(i=0; i < Times; i++)
     {
       IMS();
@@ -1121,14 +1113,14 @@ extern "C" {
         F[i] = GS.cost;
         if(F[i]> OS.cost)
         {
-          for(i1=0;i1<N;i1++) OS.p[i1] = GS.p[i1];
-          for(j1=0;j1<K;j1++) OS.SizeG[j1] = GS.SizeG[j1];
+          for(i1=0; i1<N; i1++) OS.p[i1] = GS.p[i1];
+          for(j1=0; j1<K; j1++) OS.SizeG[j1] = GS.SizeG[j1];
           OS.cost = GS.cost;
         }
       }
       Rprintf("%lf \n", F[i]);
     }
-    for(i=0;i<Times;i++)
+    for(i=0; i<Times; i++)
     {
       if(F[i] > F_best )  F_best = F[i];
       if(F[i] < F_worst)  F_worst = F[i];
@@ -1137,7 +1129,7 @@ extern "C" {
     F_ave /=  Times;
 
     Rprintf("Outputting...\n");
-    Out_results(F_best , F_ave, F_worst, Output_File_Name, File_Name);
+    Out_results(F_best, F_ave, F_worst, Output_File_Name, File_Name);
     Rprintf("Outputting solution file...\n");
     Outputing(OS, Solution_File);
     Rprintf("Done...cleaning memory and whatnot...\n");
