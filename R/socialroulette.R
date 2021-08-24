@@ -142,7 +142,7 @@ mdgp_read_solutionfile <- function(file_name) {
   n <- str_replace(line1, "^(N = )([0-9]+).*", "\\2") %>% as.numeric()
 
   #Read the groups (col_types argument used to avoid output - see ?readr::read_delim)
-  groups <- readr::read_delim(file=file_name, skip=1 + n_g, delim=" ", col_names=c("id_int", "group"), col_types = readr::cols()) %>%
+  groups <- readr::read_delim(file=file_name, skip=1 + n_g, delim="      ", col_names=c("id_int", "group"), col_types = readr::cols()) %>%
     dplyr::mutate(idx = as.numeric(.data$id_int)+1,
            group = as.numeric(.data$group) + 1) %>%
     dplyr::select(.data$idx, .data$group)
