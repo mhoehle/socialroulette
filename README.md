@@ -20,7 +20,7 @@ last_round <- setNames(list(list(c("id001", "id003", "id005"), c("id002", "id04"
 rsocialroulette(frame, past_partitions=last_round, m=2, algorithm="mdgp", time_limit=1)
 ```
 
-Note: If you have trouble installing the package from sources, binary versions are available throught my [R-universe](https://hoehleatsu.r-universe.dev/ui#builds).
+Note: If you have trouble installing the package from sources, binary versions are available throught my [R-universe](https://mhoehle.r-universe.dev/ui#builds).
 
 More complex partition algorithms, e.g., maximizing the distance in time since the people in the groups met the last time, are also available from the package. For more information see the [Getting started](https://mhoehle.github.io/socialroulette/articles/get-started.html) vignette of the package.
 
